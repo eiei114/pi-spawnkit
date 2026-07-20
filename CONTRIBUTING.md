@@ -27,11 +27,11 @@ Before opening a PR:
 
 ## Release
 
-Releases publish **`create-pi-extension`** to npm through Trusted Publishing. The root template source is not published. Do not add `NPM_TOKEN` to GitHub Secrets.
+Releases publish **`pi-spawnkit`** to npm through Trusted Publishing. Do not add `NPM_TOKEN` to GitHub Secrets.
 
 ```bash
 npm version patch
 git push
 ```
 
-See `docs/release.md` for Trusted Publisher settings and the monorepo publish path.
+See `docs/release.md` for Trusted Publisher settings and the publish workflow.

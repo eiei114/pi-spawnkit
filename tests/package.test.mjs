@@ -17,3 +17,11 @@ test("pi manifest exposes only the inert repo-seed extension", () => {
   assert.equal(pkg.pi.prompts, undefined);
   assert.equal(pkg.pi.themes, undefined);
 });
+
+test("contributor docs keep the pi-spawnkit package identity", async () => {
+  const contributing = await readFile(new URL("../CONTRIBUTING.md", import.meta.url), "utf8");
+
+  assert.match(contributing, /`pi-spawnkit`/);
+  assert.doesNotMatch(contributing, /create-pi-extension/);
+  assert.doesNotMatch(contributing, /monorepo publish path/);
+});

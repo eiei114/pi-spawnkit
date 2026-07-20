@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Correct stale `create-pi-extension` / monorepo release wording in `CONTRIBUTING.md`.
+
 ### Changed
 
 - Bump package version to `0.0.1` for the next patch release.
