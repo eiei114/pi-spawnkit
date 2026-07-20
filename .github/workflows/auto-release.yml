@@ -28,6 +28,12 @@ jobs:
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           TAG="v${CURRENT_VERSION}"
 
+          if [ "$CURRENT_VERSION" = "0.0.0" ]; then
+            echo "Repository seed version 0.0.0 is not publishable; skipping auto release."
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if [ -z "$BEFORE" ] || printf '%s' "$BEFORE" | grep -Eq '^0+$'; then
             echo "No previous commit is available; skipping auto release."
             echo "released=false" >> "$GITHUB_OUTPUT"
