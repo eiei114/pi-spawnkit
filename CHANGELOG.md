@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Bump package version to `0.0.1` for the next patch release.
+
 ### Added
 
 - Repo seeded from `eiei114/pi-extension-template`.
