@@ -1,62 +1,44 @@
 {
-  "name": "pi-extension-template",
-  "version": "0.1.6",
-  "description": "Template for building Pi packages with extensions, Agent Skills, prompts, and themes.",
+  "name": "pi-spawnkit",
+  "version": "0.0.0",
+  "description": "Child Pi executable resolver and diagnostics for reliable Pi sub-process launches.",
   "type": "module",
   "license": "MIT",
-  "author": "YOUR_NAME",
+  "author": "Eisuke Kawano",
   "keywords": [
     "pi-package",
     "pi",
-    "agent-skill",
-    "typescript"
+    "typescript",
+    "windows",
+    "spawn",
+    "subagent"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/eiei114/pi-extension-template"
+    "url": "https://github.com/eiei114/pi-spawnkit"
   },
   "bugs": {
-    "url": "https://github.com/eiei114/pi-extension-template/issues"
+    "url": "https://github.com/eiei114/pi-spawnkit/issues"
   },
-  "homepage": "https://github.com/eiei114/pi-extension-template#readme",
+  "homepage": "https://github.com/eiei114/pi-spawnkit#readme",
   "files": [
     "extensions/",
     "lib/",
-    "skills/",
-    "prompts/",
-    "themes/",
     "docs/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/greeting.test.mjs tests/format-table.test.mjs tests/smoke.test.mjs tests/create-pi-extension-cli.test.mjs",
-    "ci": "npm run typecheck && npm run sync:template && npm test && npm run pack:check && node --test tests/sync-template.test.mjs",
-    "pack:check": "npm pack --dry-run --workspace create-pi-extension",
-    "sync:template": "bun run scripts/sync-template.ts",
-    "sync:template:check": "bun run scripts/sync-template.ts && node --test tests/sync-template.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "ci": "npm run typecheck && npm test && npm run pack:check",
+    "pack:check": "npm pack --dry-run",
+    "version:check": "node -e \"console.log('version check placeholder: replace with template checker before first publish')\""
   },
   "pi": {
     "extensions": [
-      "./extensions/hello.ts",
-      "./extensions/index.ts",
-      "./extensions/tui-dashboard.ts",
-      "./extensions/skill-bridge/index.ts",
-      "./extensions/package-layout/index.ts"
-    ],
-    "skills": [
-      "./skills"
-    ],
-    "prompts": [
-      "./prompts"
-    ],
-    "themes": [
-      "./themes"
+      "./extensions/index.ts"
     ]
   },
   "publishConfig": {

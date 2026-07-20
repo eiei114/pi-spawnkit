@@ -1,58 +1,39 @@
-# pi-extension-template
+# pi-spawnkit
 
-[![CI](https://github.com/eiei114/pi-extension-template/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-extension-template/actions/workflows/ci.yml)
-[![Publish](https://github.com/eiei114/pi-extension-template/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-extension-template/actions/workflows/publish.yml)
-[![npm version](https://img.shields.io/npm/v/create-pi-extension.svg)](https://www.npmjs.com/package/create-pi-extension)
+[![CI](https://github.com/eiei114/pi-spawnkit/actions/workflows/ci.yml/badge.svg)](https://github.com/eiei114/pi-spawnkit/actions/workflows/ci.yml)
+[![Publish](https://github.com/eiei114/pi-spawnkit/actions/workflows/publish.yml/badge.svg)](https://github.com/eiei114/pi-spawnkit/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/pi-spawnkit.svg)](https://www.npmjs.com/package/pi-spawnkit)
+[![npm downloads](https://img.shields.io/npm/dm/pi-spawnkit.svg)](https://www.npmjs.com/package/pi-spawnkit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Pi package](https://img.shields.io/badge/pi-package-purple.svg)](https://pi.dev/packages)
 [![Trusted Publishing](https://img.shields.io/badge/npm-Trusted%20Publishing-blue.svg)](docs/release.md)
 
-> Template for building Pi packages with extensions, Agent Skills, prompts, and themes.
+> Resolve and smoke-test the right child `pi` executable before Pi extensions try to spawn it.
 
-This repository is the **template source** for new Pi extension OSS projects. The published npm package is [`create-pi-extension`](https://www.npmjs.com/package/create-pi-extension), not the root `pi-extension-template` name.
+## What this is
 
-## Quick start
+`pi-spawnkit` is a Pi extension/helper package for extension authors and Pi power users who launch child Pi processes. It targets Windows/npm-shim setups where the interactive shell can find `pi`, but a parent Pi process fails with `spawn pi ENOENT` because `pi.cmd` or the npm global bin is missing from the child process PATH.
 
-### Primary path (recommended)
+## Planned MVP
 
-Scaffold a new project with the CLI:
+- `/spawnkit:doctor` — show platform, PATH entries, Pi executable candidates, selected SpawnPlan, and smoke result.
+- `spawnkit_resolve_pi` — return `{ command, argsPrefix, envPatch, confidence, warnings }` for child-launching tools.
+- Session-start process-local patch — set `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1` only when high-confidence resolution succeeds.
+- Consumer docs for `pi-baton`, `pi-git-delegate`, gstack Agent/Task fallback, and Windows Git Bash / PowerShell.
 
-```bash
-bunx create-pi-extension my-pi-package
-```
-
-The CLI copies the bundled template, replaces placeholders, removes bootstrap docs, and can run `git init` plus `bun install`. See [`docs/template-checklist.md`](docs/template-checklist.md) for the minimal follow-up checklist.
-
-For a scoped package name:
+## Install
 
 ```bash
-bunx create-pi-extension @my-scope/my-pi-tool
+pi install npm:pi-spawnkit
 ```
 
-### Secondary path: GitHub Template
-
-Create a repository from this template when you prefer GitHub-first onboarding:
+Or install from GitHub:
 
 ```bash
-gh repo create OWNER/my-pi-package \
-  --template eiei114/pi-extension-template \
-  --clone
+pi install git:github.com/eiei114/pi-spawnkit
 ```
 
-Then follow the **Secondary path** section in [`docs/template-checklist.md`](docs/template-checklist.md) for manual placeholder replacement, metadata, and post-generation cleanup.
-
-## Legacy npm package
-
-Do **not** use `pi install npm:pi-extension-template` as the main onboarding path. Use **`create-pi-extension`** to scaffold a new project instead. The legacy root-package install will be removed from npm in a future release. After you publish your own extension, install it with `pi install npm:YOUR_PACKAGE_NAME` as documented in that project's README.
-
-## Repository layout
-
-| Path | Purpose |
-|---|---|
-| Repository root | Template source (not published to npm) |
-| `packages/create-pi-extension/` | Published scaffold CLI |
-| `scaffold/` | Generated-package README source synced into the bundled template |
-| `docs/` | Maintainer docs and template bootstrap guides |
+> Note: this repo is currently seeded but not implemented. The first implementation slice adds `/spawnkit:doctor`.
 
 ## Development
 
@@ -61,36 +42,19 @@ npm install
 npm run ci
 ```
 
-`npm run ci` runs typecheck, `sync:template`, CLI scaffold tests, a `create-pi-extension` pack check, and template sync assertions.
+## Boundaries
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/template-sync.md`](docs/template-sync.md).
-
-## Release
-
-Releases publish **`create-pi-extension`** to npm through Trusted Publishing. The root template source is not published.
-
-See [`docs/release.md`](docs/release.md) for setup details.
-
-## Docs
-
-- [`docs/template-checklist.md`](docs/template-checklist.md) — Primary vs Secondary setup flows
-- [`docs/template-sync.md`](docs/template-sync.md) — refresh `packages/create-pi-extension/template/` before CLI publish
-- [`docs/template-sync-checklist.md`](docs/template-sync-checklist.md) — checklist for syncing and verifying the bundled template
-- [`docs/examples.md`](docs/examples.md) — extension, skill, prompt, and theme examples
-- [`docs/release.md`](docs/release.md) — Trusted Publishing and monorepo publish path
-- [`ROADMAP.md`](ROADMAP.md) — current status, priorities, and the maintenance seed backlog
-
-## Security
-
-Pi packages can execute code with your local permissions. Review extensions before installing third-party packages.
-
-For vulnerability reporting, see [`SECURITY.md`](SECURITY.md).
+- Child `pi` process resolution only.
+- Not a generic shell execution wrapper; use `pi-winshell` for arbitrary command execution / argv / stdin safety.
+- Not a broad environment probe; use `pi-env-probe` for one-shot diagnostics.
+- No permanent PATH rewrite, shell profile edit, registry edit, automatic install, or `npm publish` by agents.
 
 ## Links
 
-- npm (`create-pi-extension`): https://www.npmjs.com/package/create-pi-extension
-- GitHub: https://github.com/eiei114/pi-extension-template
-- Issues: https://github.com/eiei114/pi-extension-template/issues
+- npm: https://www.npmjs.com/package/pi-spawnkit
+- GitHub: https://github.com/eiei114/pi-spawnkit
+- Issues: https://github.com/eiei114/pi-spawnkit/issues
+- Vault PRD: `4_Project/OSS/pi-spawnkit/Docs/PRD.md`
 
 ## License
 
