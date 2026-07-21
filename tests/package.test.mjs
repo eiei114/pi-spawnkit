@@ -20,6 +20,14 @@ test("pi manifest exposes only the spawnkit extension", () => {
   assert.equal(pkg.pi.themes, undefined);
 });
 
+test("contributor docs keep the pi-spawnkit package identity", async () => {
+  const contributing = await readFile(new URL("../CONTRIBUTING.md", import.meta.url), "utf8");
+
+  assert.match(contributing, /`pi-spawnkit`/);
+  assert.doesNotMatch(contributing, /create-pi-extension/);
+  assert.doesNotMatch(contributing, /monorepo publish path/);
+});
+
 test("doctor diagnostics include the expected object shape and warnings", async () => {
   const diagnostics = await doctor.collectSpawnkitDoctorDiagnostics({ PATH: "", PI_BIN: "" });
 
