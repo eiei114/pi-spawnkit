@@ -33,7 +33,9 @@ Or install from GitHub:
 pi install git:github.com/eiei114/pi-spawnkit
 ```
 
-> Note: this repo is currently seeded but not implemented. The first implementation slice adds `/spawnkit:doctor`.
+## Doctor command
+
+Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, checked candidates (`pi`, `pi.cmd`, `pi.exe`), and warnings. Missing candidates are diagnostics warnings rather than hard failures.
 
 ## Development
 
