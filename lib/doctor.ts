@@ -1,4 +1,4 @@
-import { access } from "node:fs/promises";
+import { access, constants } from "node:fs/promises";
 import { delimiter, isAbsolute, join } from "node:path";
 
 export const PI_EXECUTABLE_CANDIDATES = ["pi", "pi.cmd", "pi.exe"] as const;
@@ -27,7 +27,7 @@ async function isExecutableVisible(command: string, pathEntries: string[]): Prom
   for (const entry of searchPaths) {
     const candidatePath = entry ? join(entry, command) : command;
     try {
-      await access(candidatePath);
+      await access(candidatePath, constants.X_OK);
       return candidatePath;
     } catch {
       // Keep looking. Missing candidates are reported as warnings by the caller.
