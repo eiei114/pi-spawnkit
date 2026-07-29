@@ -15,11 +15,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Repo seeded from `eiei114/pi-extension-template`.
-- Package identity, README, CI baseline, and inert extension entrypoint.
+- Package identity, README, CI baseline, and extension entrypoint.
+- `/spawnkit:doctor` walking skeleton with PATH and Pi executable candidate diagnostics.
 
 ### Planned
-
-- `/spawnkit:doctor` command.
 - `spawnkit_resolve_pi` helper/tool.
 - Spawn smoke diagnostics.
 - Optional process-local session-start PATH / `PI_BIN` patch.
