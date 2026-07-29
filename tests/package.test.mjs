@@ -28,6 +28,14 @@ test("contributor docs keep the pi-spawnkit package identity", async () => {
   assert.doesNotMatch(contributing, /monorepo publish path/);
 });
 
+test("roadmap reflects shipped doctor skeleton", async () => {
+  const roadmap = await readFile(new URL("../ROADMAP.md", import.meta.url), "utf8");
+
+  assert.match(roadmap, /doctor walking skeleton shipped/i);
+  assert.doesNotMatch(roadmap, /not implemented/i);
+  assert.doesNotMatch(roadmap, /intentionally inert/i);
+});
+
 test("doctor diagnostics include the expected object shape and warnings", async () => {
   const diagnostics = await doctor.collectSpawnkitDoctorDiagnostics({ PATH: "", PI_BIN: "" });
 

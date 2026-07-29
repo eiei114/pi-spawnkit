@@ -2,13 +2,13 @@
 
 ## Current
 
-Status: **repo seeded / not implemented**
+Status: **doctor walking skeleton shipped**
 
-The repository exists, package identity is set, and template example resources have been removed from the Pi manifest. The extension entrypoint is intentionally inert until the first implementation slice.
+`/spawnkit:doctor` is implemented with structured PATH and Pi executable candidate diagnostics. Resolver, spawn smoke test, and process-local PATH patching remain planned.
 
 ## v0.1 MVP
 
-1. `/spawnkit:doctor` walking skeleton.
+1. `/spawnkit:doctor` walking skeleton — shipped.
 2. Cross-platform Pi executable resolver.
 3. Spawn smoke test and structured diagnostics.
 4. Session-start `PATH` / `PI_BIN` process-local patch.
