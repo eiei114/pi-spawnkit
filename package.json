@@ -1,6 +1,6 @@
 {
   "name": "pi-spawnkit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Child Pi executable resolver and diagnostics for reliable Pi sub-process launches.",
   "type": "module",
   "license": "MIT",
