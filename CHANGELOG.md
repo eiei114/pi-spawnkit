@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Correct stale `create-pi-extension` / monorepo release wording in `CONTRIBUTING.md`.
+- Align README status with the shipped `/spawnkit:doctor` walking skeleton.
 
 ### Changed
 

@@ -36,6 +36,13 @@ test("roadmap reflects shipped doctor skeleton", async () => {
   assert.doesNotMatch(roadmap, /intentionally inert/i);
 });
 
+test("readme reflects shipped doctor skeleton", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+
+  assert.match(readme, /walking skeleton is shipped/i);
+  assert.doesNotMatch(readme, /## Planned MVP/);
+});
+
 test("doctor diagnostics include the expected object shape and warnings", async () => {
   const diagnostics = await doctor.collectSpawnkitDoctorDiagnostics({ PATH: "", PI_BIN: "" });
 
