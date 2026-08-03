@@ -16,10 +16,14 @@
 
 `pi-spawnkit` is a Pi extension/helper package for extension authors and Pi power users who launch child Pi processes. It targets Windows/npm-shim setups where the interactive shell can find `pi`, but a parent Pi process fails with `spawn pi ENOENT` because `pi.cmd` or the npm global bin is missing from the child process PATH.
 
-## Planned MVP
+## Status
 
-- `/spawnkit:doctor` — show platform, PATH entries, Pi executable candidates, selected SpawnPlan, and smoke result.
+`/spawnkit:doctor` walking skeleton is shipped. It prints platform, PATH entries, Pi executable candidates, and warnings.
+
+## Planned next
+
 - `spawnkit_resolve_pi` — return `{ command, argsPrefix, envPatch, confidence, warnings }` for child-launching tools.
+- Spawn smoke test and structured diagnostics.
 - Session-start process-local patch — set `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1` only when high-confidence resolution succeeds.
 - Consumer docs for `pi-baton`, `pi-git-delegate`, gstack Agent/Task fallback, and Windows Git Bash / PowerShell.
 
