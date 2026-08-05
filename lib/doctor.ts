@@ -1,15 +1,11 @@
-import { access, constants } from "node:fs/promises";
-import { delimiter, isAbsolute, join } from "node:path";
-
-export const PI_EXECUTABLE_CANDIDATES = ["pi", "pi.cmd", "pi.exe"] as const;
-
-export type PiExecutableCandidate = (typeof PI_EXECUTABLE_CANDIDATES)[number];
-
-export interface CandidateLookup {
-  name: PiExecutableCandidate;
-  found: boolean;
-  path?: string;
-}
+import {
+  getPathValue,
+  getPlatformPathDelimiter,
+  renderSpawnPlan,
+  resolvePiExecutable,
+  type PiResolverCandidate,
+  type SpawnPlan,
+} from "./resolve-pi.ts";
 
 export interface SpawnkitDoctorDiagnostics {
   platform: NodeJS.Platform;
@@ -17,47 +13,16 @@ export interface SpawnkitDoctorDiagnostics {
   pathEntries: string[];
   processExecPath: string;
   piBin?: string;
-  candidates: CandidateLookup[];
+  candidates: PiResolverCandidate[];
+  spawnPlan: SpawnPlan;
   warnings: string[];
 }
 
-async function isExecutableVisible(command: string, pathEntries: string[]): Promise<string | undefined> {
-  const searchPaths = isAbsolute(command) ? [""] : pathEntries;
-
-  for (const entry of searchPaths) {
-    const candidatePath = entry ? join(entry, command) : command;
-    try {
-      await access(candidatePath, constants.X_OK);
-      return candidatePath;
-    } catch {
-      // Keep looking. Missing candidates are reported as warnings by the caller.
-    }
-  }
-
-  return undefined;
-}
-
 export async function collectSpawnkitDoctorDiagnostics(env: NodeJS.ProcessEnv = process.env): Promise<SpawnkitDoctorDiagnostics> {
-  const pathValue = env.PATH ?? env.Path ?? "";
+  const pathValue = getPathValue(env, process.platform);
+  const pathEntries = pathValue.split(getPlatformPathDelimiter(process.platform)).filter((entry) => entry.length > 0);
   const piBin = env.PI_BIN || undefined;
-  const pathEntries = pathValue.split(delimiter).filter((entry) => entry.length > 0);
-  const candidates: CandidateLookup[] = [];
-
-  for (const name of PI_EXECUTABLE_CANDIDATES) {
-    const foundPath = await isExecutableVisible(name, pathEntries);
-    candidates.push(foundPath ? { name, found: true, path: foundPath } : { name, found: false });
-  }
-
-  const warnings: string[] = [];
-  const foundAnyCandidate = candidates.some((candidate) => candidate.found);
-
-  if (!foundAnyCandidate) {
-    warnings.push(`No Pi executable candidates were found on PATH (${PI_EXECUTABLE_CANDIDATES.join(", ")}).`);
-  }
-
-  if (!piBin) {
-    warnings.push("PI_BIN is not set.");
-  }
+  const resolution = await resolvePiExecutable({ env });
 
   return {
     platform: process.platform,
@@ -65,16 +30,19 @@ export async function collectSpawnkitDoctorDiagnostics(env: NodeJS.ProcessEnv = 
     pathEntries,
     processExecPath: process.execPath,
     piBin,
-    candidates,
-    warnings,
+    candidates: resolution.candidates,
+    spawnPlan: resolution.spawnPlan,
+    warnings: resolution.spawnPlan.warnings,
   };
 }
 
 export function renderSpawnkitDoctorDiagnostics(diagnostics: SpawnkitDoctorDiagnostics): string {
-  const candidateLines = diagnostics.candidates.map((candidate) => {
-    const status = candidate.found ? `found at ${candidate.path}` : "not found";
-    return `  - ${candidate.name}: ${status}`;
-  });
+  const candidateLines = diagnostics.candidates.length > 0
+    ? diagnostics.candidates.map((candidate) => {
+        const status = candidate.found ? "found" : "not found";
+        return `  - [${candidate.source}] ${candidate.path}: ${status}`;
+      })
+    : ["  - none"];
 
   const warningLines = diagnostics.warnings.length > 0
     ? diagnostics.warnings.map((warning) => `  - ${warning}`)
@@ -86,8 +54,10 @@ export function renderSpawnkitDoctorDiagnostics(diagnostics: SpawnkitDoctorDiagn
     `PATH entries: ${diagnostics.pathEntryCount}`,
     `process.execPath: ${diagnostics.processExecPath}`,
     `PI_BIN: ${diagnostics.piBin ?? "<unset>"}`,
-    "candidates checked:",
+    "resolver candidates:",
     ...candidateLines,
+    "selected SpawnPlan:",
+    ...renderSpawnPlan(diagnostics.spawnPlan).split("\n").map((line) => `  ${line}`),
     "warnings:",
     ...warningLines,
   ].join("\n");

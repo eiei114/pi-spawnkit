@@ -18,11 +18,10 @@
 
 ## Status
 
-`/spawnkit:doctor` walking skeleton is shipped. It prints platform, PATH entries, Pi executable candidates, and warnings.
+`/spawnkit:doctor` walking skeleton and `spawnkit_resolve_pi` resolver are shipped. Doctor prints platform, PATH entries, resolver candidates, the selected SpawnPlan, and warnings.
 
 ## Planned next
 
-- `spawnkit_resolve_pi` — return `{ command, argsPrefix, envPatch, confidence, warnings }` for child-launching tools.
 - Spawn smoke test and structured diagnostics.
 - Session-start process-local patch — set `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1` only when high-confidence resolution succeeds.
 - Consumer docs for `pi-baton`, `pi-git-delegate`, gstack Agent/Task fallback, and Windows Git Bash / PowerShell.
@@ -41,7 +40,23 @@ pi install git:github.com/eiei114/pi-spawnkit
 
 ## Doctor command
 
-Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, checked candidates (`pi`, `pi.cmd`, `pi.exe`), and warnings. Missing candidates are diagnostics warnings rather than hard failures.
+Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, and warnings. Missing candidates are diagnostics warnings rather than hard failures.
+
+## Resolver tool
+
+`spawnkit_resolve_pi` returns a child-launch SpawnPlan:
+
+```ts
+{
+  command: string;
+  argsPrefix: string[];
+  envPatch: Record<string, string>;
+  confidence: "configured" | "high" | "medium" | "missing";
+  warnings: string[];
+}
+```
+
+Resolution prefers configured overrides (`override`, `PI_BIN`, package setting), then process/npm hints, npm global bin candidates, and PATH lookup. On Windows, `pi.cmd` and `pi.exe` are preferred over bare `pi` when multiple candidates are plausible.
 
 ## Development
 
