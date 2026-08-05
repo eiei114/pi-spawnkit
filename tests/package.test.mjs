@@ -28,18 +28,18 @@ test("contributor docs keep the pi-spawnkit package identity", async () => {
   assert.doesNotMatch(contributing, /monorepo publish path/);
 });
 
-test("roadmap reflects shipped doctor skeleton", async () => {
+test("roadmap reflects shipped doctor skeleton and resolver", async () => {
   const roadmap = await readFile(new URL("../ROADMAP.md", import.meta.url), "utf8");
 
-  assert.match(roadmap, /doctor walking skeleton shipped/i);
+  assert.match(roadmap, /doctor walking skeleton and resolver shipped/i);
   assert.doesNotMatch(roadmap, /not implemented/i);
   assert.doesNotMatch(roadmap, /intentionally inert/i);
 });
 
-test("readme reflects shipped doctor skeleton", async () => {
+test("readme reflects shipped doctor skeleton and resolver", async () => {
   const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 
-  assert.match(readme, /walking skeleton is shipped/i);
+  assert.match(readme, /walking skeleton and `spawnkit_resolve_pi` resolver are shipped/i);
   assert.doesNotMatch(readme, /## Planned MVP/);
 });
 
@@ -51,10 +51,8 @@ test("doctor diagnostics include the expected object shape and warnings", async 
   assert.deepEqual(diagnostics.pathEntries, []);
   assert.equal(diagnostics.processExecPath, process.execPath);
   assert.equal(diagnostics.piBin, undefined);
-  assert.deepEqual(
-    diagnostics.candidates.map((candidate) => [candidate.name, candidate.found]),
-    [["pi", false], ["pi.cmd", false], ["pi.exe", false]],
-  );
+  assert.ok(Array.isArray(diagnostics.candidates));
+  assert.deepEqual(Object.keys(diagnostics.spawnPlan), ["command", "argsPrefix", "envPatch", "confidence", "warnings"]);
   assert.ok(diagnostics.warnings.some((warning) => warning.includes("No Pi executable candidates")));
   assert.ok(diagnostics.warnings.some((warning) => warning.includes("PI_BIN is not set")));
 });
@@ -66,7 +64,7 @@ test("doctor diagnostics detect visible candidate names on PATH", async () => {
     const diagnostics = await doctor.collectSpawnkitDoctorDiagnostics({ PATH: dir, PI_BIN: join(dir, "pi") });
 
     assert.equal(diagnostics.pathEntryCount, 1);
-    assert.equal(diagnostics.candidates.find((candidate) => candidate.name === "pi")?.found, true);
+    assert.equal(diagnostics.candidates.find((candidate) => candidate.path === join(dir, "pi"))?.found, true);
     assert.equal(diagnostics.piBin, join(dir, "pi"));
   } finally {
     await rm(dir, { recursive: true, force: true });
@@ -81,21 +79,28 @@ test("doctor rendering includes required human-readable diagnostics", async () =
   assert.match(output, /PATH entries:/);
   assert.match(output, /process\.execPath:/);
   assert.match(output, /PI_BIN:/);
-  assert.match(output, /candidates checked:/);
+  assert.match(output, /resolver candidates:/);
+  assert.match(output, /selected SpawnPlan:/);
   assert.match(output, /warnings:/);
 });
 
-test("extension registers /spawnkit:doctor", async () => {
-  let registered;
+test("extension registers /spawnkit:doctor and spawnkit_resolve_pi", async () => {
+  let registeredCommand;
+  let registeredTool;
   extension.default({
     registerCommand(name, command) {
-      registered = { name, command };
+      registeredCommand = { name, command };
+    },
+    registerTool(tool) {
+      registeredTool = tool;
     },
   });
 
-  assert.equal(registered.name, "spawnkit:doctor");
+  assert.equal(registeredCommand.name, "spawnkit:doctor");
+  assert.equal(registeredTool.name, "spawnkit_resolve_pi");
+
   let notification;
-  await registered.command.handler("", {
+  await registeredCommand.command.handler("", {
     ui: {
       notify(message, level) {
         notification = { message, level };
@@ -105,4 +110,8 @@ test("extension registers /spawnkit:doctor", async () => {
 
   assert.equal(notification.level, "info");
   assert.match(notification.message, /spawnkit doctor/);
+
+  const toolResult = await registeredTool.execute("tool-call-1", {}, undefined, undefined, {});
+  assert.equal(toolResult.details.spawnPlan.argsPrefix.length, 0);
+  assert.match(toolResult.content[0].text, /SpawnPlan/);
 });
