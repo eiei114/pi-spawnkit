@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import test from "node:test";
+import { dirname, join } from "node:path";
 
 const resolver = await import("../lib/resolve-pi.ts");
 
@@ -125,4 +127,37 @@ test("PATH prepend is idempotent and uses the platform separator", async () => {
 
   assert.equal(result.spawnPlan.envPatch.Path, `${npmBin};${String.raw`C:\tools`};${String.raw`C:\other`}`);
   assert.equal(result.spawnPlan.envPatch.Path.split(";").filter((entry) => normalizeVirtualPath(entry) === normalizeVirtualPath(npmBin)).length, 1);
+});
+
+test("resolver uses the default Node executable directory as an npm-global candidate", async () => {
+  const executableName = process.platform === "win32" ? "pi.cmd" : "pi";
+  const piPath = join(dirname(process.execPath), executableName);
+  const result = await resolver.resolvePiExecutable({
+    platform: process.platform,
+    env: process.platform === "win32" ? { Path: "" } : { PATH: "" },
+    processArgv: [],
+    fileExists: virtualFileExists([piPath]),
+  });
+
+  assert.equal(result.spawnPlan.command, piPath);
+  assert.equal(result.candidates.find((candidate) => candidate.path === piPath)?.source, "npm-global");
+});
+
+test("resolver does not treat a directory named pi as an executable", async () => {
+  const dir = await mkdtemp(join(process.cwd(), ".tmp-pi-spawnkit-"));
+  const executableName = process.platform === "win32" ? "pi.cmd" : "pi";
+  try {
+    await mkdir(join(dir, executableName));
+    const result = await resolver.resolvePiExecutable({
+      platform: process.platform,
+      env: process.platform === "win32" ? { Path: dir } : { PATH: dir },
+      processArgv: [],
+      processExecPath: "",
+    });
+
+    assert.equal(result.spawnPlan.confidence, "missing");
+    assert.equal(result.candidates.find((candidate) => candidate.path === join(dir, executableName))?.found, false);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

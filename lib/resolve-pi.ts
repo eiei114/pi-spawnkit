@@ -1,4 +1,4 @@
-import { access, constants } from "node:fs/promises";
+import { access, constants, stat } from "node:fs/promises";
 import * as posixPath from "node:path/posix";
 import * as winPath from "node:path/win32";
 
@@ -153,6 +153,8 @@ function buildEnvPatch(command: string, env: NodeJS.ProcessEnv, platform: NodeJS
 
 async function defaultFileExists(candidatePath: string, platform: NodeJS.Platform): Promise<boolean> {
   try {
+    const file = await stat(candidatePath);
+    if (!file.isFile()) return false;
     await access(candidatePath, isWindowsPlatform(platform) ? constants.F_OK : constants.X_OK);
     return true;
   } catch {
@@ -267,7 +269,7 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     }
   }
 
-  for (const npmGlobalBin of collectNpmGlobalBinCandidates(options, env, platform)) {
+  for (const npmGlobalBin of collectNpmGlobalBinCandidates(processHints, env, platform)) {
     for (const executableName of executableNames) {
       const candidate = await addCandidate("npm-global", "npm global bin candidate", joinForPathEntry(npmGlobalBin, executableName, platform));
       if (!selectedCandidate && candidate?.found) {
