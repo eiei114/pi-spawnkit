@@ -8,6 +8,10 @@ import {
   type PiResolverCandidate,
   type SpawnPlan,
 } from "./resolve-pi.ts";
+import {
+  getLastSpawnkitSessionEnvPatchDiagnostics,
+  type SpawnkitSessionEnvPatchDiagnostics,
+} from "./session-state.ts";
 
 export const DEFAULT_SPAWN_SMOKE_TIMEOUT_MS = 3_000;
 export const DEFAULT_SPAWN_SMOKE_MAX_SNIPPET_CHARS = 2_048;
@@ -62,6 +66,7 @@ export interface SpawnkitDoctorDiagnostics {
   candidates: PiResolverCandidate[];
   spawnPlan: SpawnPlan;
   smoke?: SpawnSmokeResult;
+  sessionEnvPatch: SpawnkitSessionEnvPatchDiagnostics;
   warnings: string[];
 }
 
@@ -236,6 +241,7 @@ export async function collectSpawnkitDoctorDiagnostics(envOrOptions?: NodeJS.Pro
         spawn: options.spawn,
       })
     : undefined;
+  const sessionEnvPatch = getLastSpawnkitSessionEnvPatchDiagnostics();
 
   return {
     platform: process.platform,
@@ -246,13 +252,29 @@ export async function collectSpawnkitDoctorDiagnostics(envOrOptions?: NodeJS.Pro
     candidates: resolution.candidates,
     spawnPlan: resolution.spawnPlan,
     smoke,
-    warnings: resolution.spawnPlan.warnings,
+    sessionEnvPatch,
+    warnings: [...resolution.spawnPlan.warnings, ...sessionEnvPatch.warnings],
   };
 }
 
 function formatSnippet(value: string): string {
   if (value.length === 0) return "<empty>";
   return value.replace(/\r/gu, "\\r").replace(/\n/gu, "\\n");
+}
+
+function renderSessionEnvPatchDiagnostics(sessionEnvPatch: SpawnkitSessionEnvPatchDiagnostics): string[] {
+  const lines = [
+    "session env patch:",
+    `  status: ${sessionEnvPatch.status}`,
+    `  reason: ${sessionEnvPatch.reason}`,
+  ];
+
+  if (sessionEnvPatch.command) lines.push(`  command: ${sessionEnvPatch.command}`);
+  if (sessionEnvPatch.pathKey) lines.push(`  pathKey: ${sessionEnvPatch.pathKey}`);
+  if (sessionEnvPatch.pathEntry) lines.push(`  pathEntry: ${sessionEnvPatch.pathEntry}`);
+  if (sessionEnvPatch.smokeStatus) lines.push(`  smokeStatus: ${sessionEnvPatch.smokeStatus}`);
+
+  return lines;
 }
 
 function renderSmokeDiagnostics(smoke: SpawnSmokeResult | undefined): string[] {
@@ -305,6 +327,7 @@ export function renderSpawnkitDoctorDiagnostics(diagnostics: SpawnkitDoctorDiagn
     ...candidateLines,
     "selected SpawnPlan:",
     ...renderSpawnPlan(diagnostics.spawnPlan).split("\n").map((line) => `  ${line}`),
+    ...renderSessionEnvPatchDiagnostics(diagnostics.sessionEnvPatch),
     ...renderSmokeDiagnostics(diagnostics.smoke),
     "warnings:",
     ...warningLines,
