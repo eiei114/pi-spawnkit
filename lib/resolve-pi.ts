@@ -4,6 +4,7 @@ import * as winPath from "node:path/win32";
 
 export const WINDOWS_PI_EXECUTABLE_CANDIDATES = ["pi.cmd", "pi.exe", "pi"] as const;
 export const POSIX_PI_EXECUTABLE_CANDIDATES = ["pi"] as const;
+/** @deprecated Use `getPlatformExecutableCandidates(platform)` instead. */
 export const PI_EXECUTABLE_CANDIDATES = WINDOWS_PI_EXECUTABLE_CANDIDATES;
 
 export type PiExecutableCandidateName = (typeof WINDOWS_PI_EXECUTABLE_CANDIDATES)[number];
@@ -41,6 +42,7 @@ export interface ResolvePiOptions {
   processArgv?: readonly string[];
   processExecPath?: string;
   fileExists?: (candidatePath: string) => boolean | Promise<boolean>;
+  stopAtFirstMatch?: boolean;
 }
 
 function isWindowsPlatform(platform: NodeJS.Platform): boolean {
@@ -261,7 +263,10 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
   let selectedCandidate: PiResolverCandidate | undefined;
   let selectedConfidence: Exclude<SpawnPlanConfidence, "configured" | "missing"> | undefined;
 
+  const shouldStopSearching = () => options.stopAtFirstMatch === true && selectedCandidate !== undefined;
+
   for (const hint of collectProcessHintCandidates(processHints, platform)) {
+    if (shouldStopSearching()) break;
     const candidate = await addCandidate("process", "current process hint", hint);
     if (!selectedCandidate && candidate?.found) {
       selectedCandidate = candidate;
@@ -270,7 +275,9 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
   }
 
   for (const npmGlobalBin of collectNpmGlobalBinCandidates(processHints, env, platform)) {
+    if (shouldStopSearching()) break;
     for (const executableName of executableNames) {
+      if (shouldStopSearching()) break;
       const candidate = await addCandidate("npm-global", "npm global bin candidate", joinForPathEntry(npmGlobalBin, executableName, platform));
       if (!selectedCandidate && candidate?.found) {
         selectedCandidate = candidate;
@@ -280,7 +287,9 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
   }
 
   for (const pathEntry of splitPathEntries(getPathValue(env, platform), platform)) {
+    if (shouldStopSearching()) break;
     for (const executableName of executableNames) {
+      if (shouldStopSearching()) break;
       const candidate = await addCandidate("path", "PATH lookup", joinForPathEntry(pathEntry, executableName, platform));
       if (!selectedCandidate && candidate?.found) {
         selectedCandidate = candidate;
@@ -306,7 +315,7 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
 }
 
 export async function spawnkit_resolve_pi(options: ResolvePiOptions = {}): Promise<SpawnPlan> {
-  const result = await resolvePiExecutable(options);
+  const result = await resolvePiExecutable({ ...options, stopAtFirstMatch: true });
   return result.spawnPlan;
 }
 

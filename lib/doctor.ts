@@ -1,8 +1,8 @@
 import {
   getPathValue,
-  getPlatformPathDelimiter,
   renderSpawnPlan,
   resolvePiExecutable,
+  splitPathEntries,
   type PiResolverCandidate,
   type SpawnPlan,
 } from "./resolve-pi.ts";
@@ -19,8 +19,7 @@ export interface SpawnkitDoctorDiagnostics {
 }
 
 export async function collectSpawnkitDoctorDiagnostics(env: NodeJS.ProcessEnv = process.env): Promise<SpawnkitDoctorDiagnostics> {
-  const pathValue = getPathValue(env, process.platform);
-  const pathEntries = pathValue.split(getPlatformPathDelimiter(process.platform)).filter((entry) => entry.length > 0);
+  const pathEntries = splitPathEntries(getPathValue(env, process.platform), process.platform);
   const piBin = env.PI_BIN || undefined;
   const resolution = await resolvePiExecutable({ env });
 
@@ -44,10 +43,6 @@ export function renderSpawnkitDoctorDiagnostics(diagnostics: SpawnkitDoctorDiagn
       })
     : ["  - none"];
 
-  const warningLines = diagnostics.warnings.length > 0
-    ? diagnostics.warnings.map((warning) => `  - ${warning}`)
-    : ["  - none"];
-
   return [
     "spawnkit doctor",
     `platform: ${diagnostics.platform}`,
@@ -58,7 +53,5 @@ export function renderSpawnkitDoctorDiagnostics(diagnostics: SpawnkitDoctorDiagn
     ...candidateLines,
     "selected SpawnPlan:",
     ...renderSpawnPlan(diagnostics.spawnPlan).split("\n").map((line) => `  ${line}`),
-    "warnings:",
-    ...warningLines,
   ].join("\n");
 }
