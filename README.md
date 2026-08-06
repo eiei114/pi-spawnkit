@@ -18,11 +18,10 @@
 
 ## Status
 
-`/spawnkit:doctor` walking skeleton and `spawnkit_resolve_pi` resolver are shipped. Doctor prints platform, PATH entries, resolver candidates, the selected SpawnPlan, and warnings.
+`/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. Doctor prints platform, PATH entries, resolver candidates, the selected SpawnPlan, smoke status, bounded stdout/stderr snippets, version text when available, and warnings.
 
 ## Planned next
 
-- Spawn smoke test and structured diagnostics.
 - Session-start process-local patch — set `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1` only when high-confidence resolution succeeds.
 - Consumer docs for `pi-baton`, `pi-git-delegate`, gstack Agent/Task fallback, and Windows Git Bash / PowerShell.
 
@@ -40,7 +39,7 @@ pi install git:github.com/eiei114/pi-spawnkit
 
 ## Doctor command
 
-Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, and warnings. Missing candidates are diagnostics warnings rather than hard failures.
+Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, smoke status, bounded stdout/stderr snippets, version text when available, and warnings. Use `/spawnkit:doctor --json` for structured diagnostics. Missing candidates are diagnostics warnings rather than hard failures.
 
 ## Resolver tool
 

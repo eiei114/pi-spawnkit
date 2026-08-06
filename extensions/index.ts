@@ -1,6 +1,6 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
-import { collectSpawnkitDoctorDiagnostics, renderSpawnkitDoctorDiagnostics } from "../lib/doctor.ts";
+import { collectSpawnkitDoctorDiagnostics, renderSpawnkitDoctorDiagnostics, runSpawnSmokeTest } from "../lib/doctor.ts";
 import { renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
 
 const resolvePiToolParameters = Type.Object({
@@ -10,10 +10,17 @@ const resolvePiToolParameters = Type.Object({
 
 type ResolvePiToolParameters = Static<typeof resolvePiToolParameters>;
 
+function wantsJsonOutput(args: unknown): boolean {
+  if (Array.isArray(args)) return args.some((arg) => arg === "--json");
+  if (typeof args === "string") return args.split(/\s+/u).includes("--json");
+  return false;
+}
+
 export {
   collectSpawnkitDoctorDiagnostics,
   renderSpawnkitDoctorDiagnostics,
   renderSpawnPlan,
+  runSpawnSmokeTest,
   spawnkit_resolve_pi,
 };
 
@@ -38,9 +45,12 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerCommand("spawnkit:doctor", {
     description: "Show pi-spawnkit runtime diagnostics for child Pi executable resolution.",
-    handler: async (_args, ctx) => {
+    handler: async (args, ctx) => {
       const diagnostics = await collectSpawnkitDoctorDiagnostics();
-      ctx.ui.notify(renderSpawnkitDoctorDiagnostics(diagnostics), "info");
+      const message = wantsJsonOutput(args)
+        ? JSON.stringify(diagnostics, null, 2)
+        : renderSpawnkitDoctorDiagnostics(diagnostics);
+      ctx.ui.notify(message, "info");
     },
   });
 }
