@@ -18,7 +18,7 @@
 
 ## Status
 
-`/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. The session-start process-local env patch is also shipped: when high-confidence resolution passes smoke, the current Pi process gets an idempotent `PATH` prepend, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1`.
+`/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. The session-start process-local env patch is also shipped: when high-confidence (or explicit `configured`) resolution passes smoke, the current Pi process gets an idempotent `PATH` prepend, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1`.
 
 ## Planned next
 
