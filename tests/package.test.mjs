@@ -86,10 +86,14 @@ test("doctor rendering includes required human-readable diagnostics and smoke st
   assert.match(output, /warnings:/);
 });
 
-test("extension registers /spawnkit:doctor and spawnkit_resolve_pi", async () => {
+test("extension registers session patch, /spawnkit:doctor, and spawnkit_resolve_pi", async () => {
   let registeredCommand;
   let registeredTool;
+  let sessionStartHandler;
   extension.default({
+    on(eventName, handler) {
+      if (eventName === "session_start") sessionStartHandler = handler;
+    },
     registerCommand(name, command) {
       registeredCommand = { name, command };
     },
@@ -98,6 +102,7 @@ test("extension registers /spawnkit:doctor and spawnkit_resolve_pi", async () =>
     },
   });
 
+  assert.equal(typeof sessionStartHandler, "function");
   assert.equal(registeredCommand.name, "spawnkit:doctor");
   assert.equal(registeredTool.name, "spawnkit_resolve_pi");
 

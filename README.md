@@ -18,11 +18,10 @@
 
 ## Status
 
-`/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. Doctor prints platform, PATH entries, resolver candidates, the selected SpawnPlan, smoke status, bounded stdout/stderr snippets, version text when available, and warnings.
+`/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. The session-start process-local env patch is also shipped: when high-confidence (or explicit `configured`) resolution passes smoke, the current Pi process gets an idempotent `PATH` prepend, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1`.
 
 ## Planned next
 
-- Session-start process-local patch — set `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1` only when high-confidence resolution succeeds.
 - Consumer docs for `pi-baton`, `pi-git-delegate`, gstack Agent/Task fallback, and Windows Git Bash / PowerShell.
 
 ## Install
@@ -39,7 +38,11 @@ pi install git:github.com/eiei114/pi-spawnkit
 
 ## Doctor command
 
-Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, smoke status, bounded stdout/stderr snippets, version text when available, and warnings. Use `/spawnkit:doctor --json` for structured diagnostics. Missing candidates are diagnostics warnings rather than hard failures.
+Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, session env patch status, smoke status, bounded stdout/stderr snippets, version text when available, and warnings. Use `/spawnkit:doctor --json` for structured diagnostics. Missing candidates are diagnostics warnings rather than hard failures.
+
+## Session-start env patch
+
+On `session_start`, the extension resolves and smoke-tests the child Pi executable. It mutates only the current process `process.env`, and only when resolver confidence is `high` (or explicit `configured`) and smoke status is `ok`. Set `PI_SPAWNKIT_SESSION_PATCH=0` or `PI_SPAWNKIT_DISABLE_SESSION_PATCH=1` before starting Pi to opt out.
 
 ## Resolver tool
 

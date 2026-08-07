@@ -1,6 +1,8 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
 import { collectSpawnkitDoctorDiagnostics, renderSpawnkitDoctorDiagnostics, runSpawnSmokeTest } from "../lib/doctor.ts";
+import { applySpawnkitSessionEnvPatch } from "../lib/session-env.ts";
+import { getLastSpawnkitSessionEnvPatchDiagnostics } from "../lib/session-state.ts";
 import { renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
 
 const resolvePiToolParameters = Type.Object({
@@ -17,7 +19,9 @@ function wantsJsonOutput(args: unknown): boolean {
 }
 
 export {
+  applySpawnkitSessionEnvPatch,
   collectSpawnkitDoctorDiagnostics,
+  getLastSpawnkitSessionEnvPatchDiagnostics,
   renderSpawnkitDoctorDiagnostics,
   renderSpawnPlan,
   runSpawnSmokeTest,
@@ -25,6 +29,10 @@ export {
 };
 
 export default function (pi: ExtensionAPI) {
+  pi.on("session_start", async () => {
+    await applySpawnkitSessionEnvPatch();
+  });
+
   pi.registerTool({
     name: "spawnkit_resolve_pi",
     label: "Resolve Pi executable",
