@@ -115,6 +115,40 @@ test("configured override takes precedence and warns when the path is missing", 
   assert.ok(result.spawnPlan.warnings.some((warning) => warning.includes("Configured Pi executable override")));
 });
 
+test("override, explicit piBin, and PI_BIN outrank packageSetting", async () => {
+  const override = String.raw`C:\configured\override\pi.cmd`;
+  const piBin = String.raw`C:\configured\pi-bin\pi.cmd`;
+  const envPiBin = String.raw`C:\configured\env-pi-bin\pi.cmd`;
+  const packageSetting = String.raw`C:\configured\package-setting\pi.cmd`;
+  const existingPaths = [override, piBin, envPiBin, packageSetting];
+
+  let result = await resolveWithVirtualFiles({
+    platform: "win32",
+    override,
+    packageSetting,
+    env: { Path: "", PI_BIN: envPiBin },
+  }, existingPaths);
+
+  assert.equal(result.spawnPlan.command, override);
+
+  result = await resolveWithVirtualFiles({
+    platform: "win32",
+    piBin,
+    packageSetting,
+    env: { Path: "", PI_BIN: envPiBin },
+  }, existingPaths);
+
+  assert.equal(result.spawnPlan.command, piBin);
+
+  result = await resolveWithVirtualFiles({
+    platform: "win32",
+    packageSetting,
+    env: { Path: "", PI_BIN: envPiBin },
+  }, existingPaths);
+
+  assert.equal(result.spawnPlan.command, envPiBin);
+});
+
 test("PATH prepend is idempotent and uses the platform separator", async () => {
   const appData = String.raw`C:\Users\alice\AppData\Roaming`;
   const npmBin = String.raw`C:\Users\alice\AppData\Roaming\npm`;

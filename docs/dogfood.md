@@ -25,7 +25,7 @@ Collected from the same local checkout by importing `collectSpawnkitDoctorDiagno
   "piBin": "<unset>",
   "foundCandidateCount": 2,
   "selectedSpawnPlan": {
-    "command": "%APPDATA%\\npm\\pi.cmd",
+    "command": "C:\\Users\\alice\\AppData\\Roaming\\npm\\pi.cmd",
     "argsPrefix": [],
     "confidence": "high",
     "envPatchKeys": ["PI_BIN", "PATH"],
@@ -52,5 +52,7 @@ Collected from the same local checkout by importing `collectSpawnkitDoctorDiagno
   "versionText": "<unavailable>"
 }
 ```
+
+The username in the absolute Windows path above is normalized to `alice` for repo-safe documentation; the observed plan used the same absolute npm-shim path shape, not an expandable `%APPDATA%` placeholder.
 
 Control check: direct shell `pi --version` returned `0.83.0` in the same terminal. The SpawnPlan smoke result above is intentionally recorded as observed dogfood evidence for the Windows npm-shim setup.

@@ -94,7 +94,7 @@ On `session_start`, the extension resolves and smoke-tests the child Pi executab
 }
 ```
 
-Resolution prefers configured overrides (`override`, `PI_BIN`, package setting), then process/npm hints, npm global bin candidates, and PATH lookup. On Windows, `pi.cmd` and `pi.exe` are preferred over bare `pi` when multiple candidates are plausible.
+Resolution prefers configured overrides in this order: `override`, explicit `piBin`, environment `PI_BIN`, then package setting. If no configured value is present, it checks process/npm hints, npm global bin candidates, and PATH lookup. On Windows, `pi.cmd` and `pi.exe` are preferred over bare `pi` when multiple candidates are plausible.
 
 Consumer responsibilities:
 
@@ -105,11 +105,35 @@ Consumer responsibilities:
 
 ## Helper usage from another Pi extension
 
-A Pi extension that depends on `pi-spawnkit` can import the helper from the package and keep its own package setting as the highest-priority override:
+A Pi extension that depends on `pi-spawnkit` can import the helpers from the package and pass its own package setting as a lower-priority fallback. Per-call `override`, explicit `piBin`, and environment `PI_BIN` still win over `packageSetting`.
 
 ```ts
-import { spawn as spawnChildPi } from "node:child_process";
-import { spawnkit_resolve_pi } from "pi-spawnkit/extensions/index.ts";
+import { spawn } from "node:child_process";
+import { runSpawnSmokeTest, spawnkit_resolve_pi } from "pi-spawnkit/extensions/index.ts";
+
+function isWindowsBatchPlan(command: string): boolean {
+  return process.platform === "win32" && /\.(?:cmd|bat)$/iu.test(command);
+}
+
+function quoteForCmd(value: string): string {
+  if (/[\r\n]/u.test(value)) {
+    throw new Error("Child Pi arguments must not contain newlines for cmd.exe dispatch.");
+  }
+
+  return `"${value.replace(/(["^&|<>()%!])/gu, "^$1")}"`;
+}
+
+function spawnPlanCommand(command: string, args: string[], options: Parameters<typeof spawn>[2]) {
+  if (isWindowsBatchPlan(command)) {
+    const commandLine = ["call", quoteForCmd(command), ...args.map(quoteForCmd)].join(" ");
+    return spawn(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", commandLine], {
+      ...options,
+      windowsVerbatimArguments: true,
+    });
+  }
+
+  return spawn(command, args, options);
+}
 
 export async function launchChildPi(args: string[], packageSetting?: string) {
   const plan = await spawnkit_resolve_pi({ packageSetting });
@@ -118,12 +142,17 @@ export async function launchChildPi(args: string[], packageSetting?: string) {
     throw new Error(`Unable to resolve child pi executable: ${plan.warnings.join("; ")}`);
   }
 
+  const smoke = await runSpawnSmokeTest(plan, { spawn: spawnPlanCommand });
+  if (smoke.status !== "ok") {
+    throw new Error(`Child pi smoke failed (${smoke.status}): ${smoke.errorMessage ?? smoke.versionText ?? "no detail"}`);
+  }
+
   const childEnv = {
     ...process.env,
     ...plan.envPatch,
   };
 
-  return spawnChildPi(
+  return spawnPlanCommand(
     plan.command,
     [...plan.argsPrefix, ...args],
     {
@@ -150,16 +179,20 @@ spawn("pi", args, {
 });
 ```
 
-After:
+After, using the batch-aware `spawnPlanCommand` helper from the previous section:
 
 ```ts
-import { spawn } from "node:child_process";
-import { spawnkit_resolve_pi } from "pi-spawnkit/extensions/index.ts";
+import { runSpawnSmokeTest, spawnkit_resolve_pi } from "pi-spawnkit/extensions/index.ts";
 
 const plan = await spawnkit_resolve_pi();
 const env = { ...process.env, ...plan.envPatch };
+const smoke = await runSpawnSmokeTest(plan, { spawn: spawnPlanCommand });
 
-spawn(plan.command, [...plan.argsPrefix, ...args], {
+if (smoke.status !== "ok") {
+  throw new Error(`Child pi smoke failed: ${smoke.status}`);
+}
+
+spawnPlanCommand(plan.command, [...plan.argsPrefix, ...args], {
   env,
   stdio: "inherit",
   windowsHide: true,
@@ -172,11 +205,11 @@ The ordering matters: `argsPrefix` belongs before consumer args because a future
 
 ### `pi-baton`
 
-Resolve once per baton handoff before starting the child Pi process. Pass baton-specific prompts, session flags, and resource flags after `plan.argsPrefix`; do not rebuild PATH from the interactive shell. Include `plan.envPatch` when spawning so `PI_BIN` and any resolved npm-bin PATH prepend are visible to the child.
+Resolve once per baton handoff before starting the child Pi process. Pass baton-specific prompts, session flags, and resource flags after `plan.argsPrefix`; do not rebuild PATH from the interactive shell. Include `plan.envPatch` when spawning so `PI_BIN` and any resolved npm-bin PATH prepend are visible to the child. Reuse a batch-aware launcher like `spawnPlanCommand` above so Windows `pi.cmd` plans are dispatched through `cmd.exe` and native executable plans still use direct spawn.
 
 ### `pi-git-delegate`
 
-Resolve inside the delegating process, then spawn the child Pi from the target worktree with the merged child environment. This avoids depending on Git Bash login startup, PowerShell profile startup, or IDE-specific PATH mutations that may not exist inside the delegated child process.
+Resolve inside the delegating process, then spawn the child Pi from the target worktree with the merged child environment and the same batch-aware launch helper. This avoids depending on Git Bash login startup, PowerShell profile startup, IDE-specific PATH mutations, or direct spawning of Windows batch shims that may not work inside the delegated child process.
 
 ### gstack Agent/Task fallback
 
