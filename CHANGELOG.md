@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Bump package version to `0.1.0` for the initial publish handoff.
-- Add a concrete `npm run version:check` release readiness check for package metadata, changelog, lockfile version alignment, auto-release, and Trusted Publishing policy.
+- Add a concrete `npm run version:check` release readiness check for package metadata, changelog, strict SemVer syntax, lockfile version alignment, auto-release workflow YAML, and Trusted Publishing policy.
 
 ### Fixed
 

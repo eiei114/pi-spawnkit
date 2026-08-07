@@ -2,7 +2,7 @@
 
 `pi-spawnkit` publishes to npm using Trusted Publishing with GitHub Actions OIDC.
 
-Do not add `NPM_TOKEN` or long-lived npm tokens to GitHub Secrets.
+Do not add `NPM_TOKEN`, `NODE_AUTH_TOKEN`, or other long-lived npm tokens to GitHub Secrets.
 
 ## One-time npm setup
 
@@ -30,7 +30,7 @@ The `v*.*.*` tag also triggers `.github/workflows/publish.yml`, which runs CI an
 - `auto-release.yml` has `permissions: actions: write` and explicitly calls `gh workflow run publish.yml --ref "$TAG" -f ref="$TAG"`.
 - GitHub-hosted runner.
 - Node.js 24.
-- No `NPM_TOKEN`.
+- No `NPM_TOKEN` or `NODE_AUTH_TOKEN`.
 
 ## First release checklist
 
