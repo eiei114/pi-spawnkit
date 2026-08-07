@@ -25,7 +25,13 @@ function isRecord(value) {
 }
 
 export function isStrictSemverVersion(value) {
-  return typeof value === "string" && semver.valid(value, { loose: false }) !== null;
+  if (typeof value !== "string" || semver.valid(value, { loose: false }) === null) {
+    return false;
+  }
+
+  const parsed = semver.parse(value, { loose: false });
+  const fullParsedVersion = `${parsed.version}${parsed.build.length > 0 ? `+${parsed.build.join(".")}` : ""}`;
+  return fullParsedVersion === value;
 }
 
 export function parseWorkflowYaml(path, text) {
@@ -70,17 +76,27 @@ function findStepByName(job, stepName) {
   return job.steps.find((step) => isRecord(step) && step.name === stepName);
 }
 
-function runScriptHasCommand(runScript, expectedCommand) {
+function lineHasOption(line, option) {
+  const optionPattern = new RegExp(`(?:^|\\s)${escapeRegExp(option)}(?:\\s|=|$)`, "u");
+  return optionPattern.test(line);
+}
+
+function runScriptHasCommand(runScript, expectedCommand, options = {}) {
+  const disallowedOptions = options.disallowedOptions ?? [];
+
   return runScript
     .split(/\r?\n/u)
     .map((line) => line.trim())
-    .some((line) => line === expectedCommand || line.startsWith(`${expectedCommand} `));
+    .some((line) => {
+      const matchesExpectedCommand = line === expectedCommand || line.startsWith(`${expectedCommand} `);
+      return matchesExpectedCommand && disallowedOptions.every((option) => !lineHasOption(line, option));
+    });
 }
 
-function assertStepRunsCommand(job, stepName, expectedCommand, message) {
+function assertStepRunsCommand(job, stepName, expectedCommand, message, options) {
   const step = findStepByName(job, stepName);
   assert(isRecord(step), `job is missing step: ${stepName}`);
-  assert(typeof step.run === "string" && runScriptHasCommand(step.run, expectedCommand), message);
+  assert(typeof step.run === "string" && runScriptHasCommand(step.run, expectedCommand, options), message);
 }
 
 export function findSecretBackedNpmAuthReferences(value, path = "$") {
@@ -167,6 +183,7 @@ export function validatePublishWorkflow(workflow) {
     "Publish pi-spawnkit to npm",
     "npm publish --access public",
     ".github/workflows/publish.yml must publish with public access",
+    { disallowedOptions: ["--dry-run"] },
   );
 }
 
