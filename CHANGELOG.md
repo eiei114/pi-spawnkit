@@ -4,22 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Fixed
-
-- Correct stale `create-pi-extension` / monorepo release wording in `CONTRIBUTING.md`.
-- Align README status with the shipped `/spawnkit:doctor` walking skeleton.
-
-### Changed
-
-- Bump package version to `0.0.1` for the next patch release.
+## [0.1.0] - 2026-08-07
 
 ### Added
 
-- Repo seeded from `eiei114/pi-extension-template`.
-- Package identity, README, CI baseline, and extension entrypoint.
-- `/spawnkit:doctor` walking skeleton with PATH and Pi executable candidate diagnostics.
+- Repo seeded from `eiei114/pi-extension-template` with package identity, README, CI baseline, and extension entrypoint.
+- `/spawnkit:doctor` diagnostics for platform, PATH entries, candidate Pi executables, selected SpawnPlan, smoke status, and warnings.
+- `spawnkit_resolve_pi` helper/tool for configured, environment, npm-bin, and PATH-based child Pi executable resolution.
+- Spawn smoke diagnostics for verifying the selected child Pi plan before consumers launch subprocesses.
+- Conservative session-start process-local env patching for `PATH`, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED` after high-confidence smoke success.
+- Consumer docs and dogfood evidence covering direct helper usage, replacing `spawn("pi", args)`, `pi-baton`, `pi-git-delegate`, gstack fallback, and Windows npm shim notes.
+- Release workflow documentation for GitHub auto-release and npm Trusted Publishing handoff.
 
-### Planned
-- `spawnkit_resolve_pi` helper/tool.
-- Spawn smoke diagnostics.
-- Optional process-local session-start PATH / `PI_BIN` patch.
+### Changed
+
+- Bump package version to `0.1.0` for the initial publish handoff.
+- Add a concrete `npm run version:check` release readiness check for package metadata, changelog, lockfile version alignment, auto-release, and Trusted Publishing policy.
+
+### Fixed
+
+- Correct stale `create-pi-extension` / monorepo release wording in `CONTRIBUTING.md`.
+- Align README status with the shipped `/spawnkit:doctor` walking skeleton, resolver, smoke diagnostics, session-start patch, and consumer integration notes.
