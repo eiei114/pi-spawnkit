@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Run `npm run version:check` inside `npm run ci` so release metadata and Trusted Publishing workflow policy cannot drift undetected.
 ## [0.1.0] - 2026-08-07
 
 ### Added
