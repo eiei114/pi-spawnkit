@@ -36,6 +36,6 @@ The `v*.*.*` tag also triggers `.github/workflows/publish.yml`, which runs CI an
 
 - [ ] `package.json` version is final.
 - [ ] `CHANGELOG.md` has the release entry.
-- [ ] `npm run ci` passes.
+- [ ] `npm run ci` passes (includes `npm run version:check` for release metadata and workflow policy).
 - [ ] `npm pack --dry-run` contains only expected package files.
 - [ ] npm Trusted Publisher targets `pi-spawnkit` + `publish.yml`.

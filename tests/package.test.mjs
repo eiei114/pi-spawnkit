@@ -13,6 +13,11 @@ test("package identity is pi-spawnkit", () => {
   assert.equal(pkg.repository.url, "https://github.com/eiei114/pi-spawnkit");
 });
 
+test("ci script runs release version check before pack validation", () => {
+  assert.match(pkg.scripts.ci, /npm run version:check/);
+  assert.ok(pkg.scripts.ci.indexOf("npm run pack:check") > pkg.scripts.ci.indexOf("npm run version:check"));
+});
+
 test("pi manifest exposes only the spawnkit extension", () => {
   assert.deepEqual(pkg.pi, { extensions: ["./extensions/index.ts"] });
   assert.equal(pkg.pi.skills, undefined);
