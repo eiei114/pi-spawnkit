@@ -59,7 +59,7 @@ Control check: direct shell `pi --version` returned `0.83.0` in the same termina
 
 ## Cross-platform launcher fix
 
-Date: 2026-08-13 UTC
+Date: 2026-08-12 UTC
 
 The launcher adapter now sends Windows npm shims through the same `ComSpec /d /s /c call ...` route for both smoke tests and real child launches. The local Windows dogfood control now reports:
 

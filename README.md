@@ -11,7 +11,6 @@
 [![Trusted Publishing](https://img.shields.io/badge/npm-Trusted%20Publishing-blue.svg)](docs/release.md)
 
 > **Pi gstack専用 companion.** Resolve and smoke-test the right child `pi` executable before gstack review flows try to spawn it.
-
 > This package is maintained for **gstack running inside Pi**. It is not a general shell or process-management tool.
 
 ## What this is
