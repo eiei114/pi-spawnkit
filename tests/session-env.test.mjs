@@ -78,6 +78,33 @@ test("session env patch applies after high-confidence resolution and successful 
   assert.equal(mock.calls.length, 1);
 });
 
+test("Windows session env patch smoke-tests the npm cmd shim through ComSpec", async () => {
+  const appData = String.raw`C:\Users\alice\AppData\Roaming`;
+  const npmBin = String.raw`C:\Users\alice\AppData\Roaming\npm`;
+  const piCmd = String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`;
+  const env = { Path: "", APPDATA: appData, ComSpec: String.raw`C:\Windows\System32\cmd.exe` };
+  const mock = createMockSpawn((child, call) => {
+    setImmediate(() => child.emit("close", 0, null));
+    assert.equal(call.command, env.ComSpec);
+    assert.deepEqual(call.args.slice(0, 3), ["/d", "/s", "/c"]);
+  });
+
+  const result = await sessionEnv.applySpawnkitSessionEnvPatch({
+    platform: "win32",
+    env,
+    processArgv: [],
+    processExecPath: "",
+    fileExists: virtualFileExists([piCmd]),
+    spawn: mock.spawn,
+    smokeTimeoutMs: 100,
+  });
+
+  assert.equal(result.status, "applied");
+  assert.equal(result.command, piCmd);
+  assert.equal(env.PI_BIN, piCmd);
+  assert.equal(env.Path, npmBin);
+});
+
 test("session env patch treats an explicit configured Pi path as eligible after smoke", async () => {
   const piPath = "/opt/pi/bin/pi";
   const env = { PATH: "/usr/bin", PI_BIN: piPath };

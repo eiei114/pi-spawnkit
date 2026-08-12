@@ -48,6 +48,15 @@ test("readme reflects shipped doctor skeleton, resolver, and smoke diagnostics",
   assert.doesNotMatch(readme, /## Planned MVP/);
 });
 
+test("readme identifies the Pi gstack integration and shared launcher", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+
+  assert.match(readme, /Pi gstack専用 companion/i);
+  assert.match(readme, /spawnWithSpawnPlan/);
+  assert.match(readme, /gstack Codex reviews/i);
+  assert.match(readme, /Windows,? npm `\.cmd` shims/i);
+});
+
 test("doctor diagnostics include the expected object shape and warnings", async () => {
   const diagnostics = await doctor.collectSpawnkitDoctorDiagnostics({ env: { PATH: "", PI_BIN: "" }, smoke: false });
 
