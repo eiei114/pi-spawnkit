@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-12
+
 ### Added
 
 - Add a shared `spawnWithSpawnPlan` launcher so gstack review consumers use the same cross-platform child Pi launch path as the smoke test.
