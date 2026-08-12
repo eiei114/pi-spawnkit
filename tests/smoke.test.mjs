@@ -52,6 +52,7 @@ test("spawn smoke reports ok, uses SpawnPlan args/env, and extracts version text
     argsPrefix: ["--profile", "child"],
     envPatch: { PI_BIN: "/opt/pi/bin/pi", PATH: "/opt/pi/bin" },
   }), {
+    platform: "linux",
     env: { PATH: "/usr/bin", KEEP: "1" },
     spawn: mock.spawn,
     timeoutMs: 100,
@@ -67,6 +68,32 @@ test("spawn smoke reports ok, uses SpawnPlan args/env, and extracts version text
   assert.equal(mock.calls[0].options.env.PATH, "/opt/pi/bin");
   assert.equal(mock.calls[0].options.env.KEEP, "1");
   assert.deepEqual(mock.calls[0].options.stdio, ["ignore", "pipe", "pipe"]);
+});
+
+test("Windows npm shim smoke uses ComSpec instead of spawning pi.cmd directly", async () => {
+  const piCmd = String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`;
+  const mock = createMockSpawn((child) => {
+    setImmediate(() => {
+      child.stdout.write("0.83.0\n");
+      child.emit("close", 0, null);
+    });
+  });
+
+  const result = await doctor.runSpawnSmokeTest(createPlan({
+    command: piCmd,
+    envPatch: { PI_BIN: piCmd, Path: String.raw`C:\Users\alice\AppData\Roaming\npm` },
+  }), {
+    platform: "win32",
+    env: { Path: "", ComSpec: String.raw`C:\Windows\System32\cmd.exe` },
+    spawn: mock.spawn,
+    timeoutMs: 100,
+  });
+
+  assert.equal(result.status, "ok");
+  assert.equal(mock.calls[0].command, String.raw`C:\Windows\System32\cmd.exe`);
+  assert.deepEqual(mock.calls[0].args.slice(0, 3), ["/d", "/s", "/c"]);
+  assert.match(mock.calls[0].args[3], /^call /u);
+  assert.equal(mock.calls[0].options.windowsVerbatimArguments, true);
 });
 
 test("spawn smoke classifies ENOENT as not_found", async () => {

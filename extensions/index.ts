@@ -1,9 +1,10 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
 import { collectSpawnkitDoctorDiagnostics, renderSpawnkitDoctorDiagnostics, runSpawnSmokeTest } from "../lib/doctor.ts";
+import { spawnWithSpawnPlan } from "../lib/launch.ts";
 import { applySpawnkitSessionEnvPatch } from "../lib/session-env.ts";
 import { getLastSpawnkitSessionEnvPatchDiagnostics } from "../lib/session-state.ts";
-import { renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
+import { buildSpawnPlanInvocation, renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
 
 const resolvePiToolParameters = Type.Object({
   override: Type.Optional(Type.String({ description: "Explicit Pi executable path. Takes precedence over PI_BIN." })),
@@ -20,11 +21,13 @@ function wantsJsonOutput(args: unknown): boolean {
 
 export {
   applySpawnkitSessionEnvPatch,
+  buildSpawnPlanInvocation,
   collectSpawnkitDoctorDiagnostics,
   getLastSpawnkitSessionEnvPatchDiagnostics,
   renderSpawnkitDoctorDiagnostics,
   renderSpawnPlan,
   runSpawnSmokeTest,
+  spawnWithSpawnPlan,
   spawnkit_resolve_pi,
 };
 

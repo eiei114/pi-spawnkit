@@ -1,6 +1,7 @@
 import { spawn as nodeSpawn } from "node:child_process";
 import type { Readable } from "node:stream";
 import {
+  buildSpawnPlanInvocation,
   getPathValue,
   getPlatformPathDelimiter,
   renderSpawnPlan,
@@ -22,6 +23,7 @@ export interface SpawnSmokeSpawnOptions {
   env: NodeJS.ProcessEnv;
   windowsHide: boolean;
   stdio: ["ignore", "pipe", "pipe"];
+  windowsVerbatimArguments?: boolean;
 }
 
 export interface SpawnSmokeChild {
@@ -39,6 +41,9 @@ export interface SpawnSmokeOptions {
   timeoutMs?: number;
   maxSnippetChars?: number;
   versionArgs?: readonly string[];
+  platform?: NodeJS.Platform;
+  comSpec?: string;
+  shell?: string;
   spawn?: SpawnSmokeSpawner;
 }
 
@@ -135,6 +140,12 @@ export async function runSpawnSmokeTest(spawnPlan: SpawnPlan, options: SpawnSmok
     ...(options.env ?? process.env),
     ...spawnPlan.envPatch,
   };
+  const invocation = buildSpawnPlanInvocation(spawnPlan, options.versionArgs ?? ["--version"], {
+    platform: options.platform,
+    env,
+    comSpec: options.comSpec,
+    shell: options.shell,
+  });
 
   return await new Promise<SpawnSmokeResult>((resolve) => {
     let settled = false;
@@ -167,7 +178,12 @@ export async function runSpawnSmokeTest(spawnPlan: SpawnPlan, options: SpawnSmok
 
     let child: SpawnSmokeChild;
     try {
-      child = spawn(spawnPlan.command, args, { env, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+      child = spawn(invocation.command, invocation.args, {
+        env,
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+        windowsVerbatimArguments: invocation.windowsVerbatimArguments,
+      });
     } catch (error) {
       const code = errorCode(error);
       finish(statusForSpawnError(code), { errorCode: code, errorMessage: errorMessage(error) });

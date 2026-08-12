@@ -22,6 +22,8 @@ export interface ApplySpawnkitSessionEnvPatchOptions extends ResolvePiOptions {
   smokeTimeoutMs?: number;
   maxSmokeSnippetChars?: number;
   versionArgs?: readonly string[];
+  comSpec?: string;
+  shell?: string;
   spawn?: SpawnSmokeSpawner;
 }
 
@@ -119,6 +121,9 @@ export async function applySpawnkitSessionEnvPatch(options: ApplySpawnkitSession
     timeoutMs: options.smokeTimeoutMs,
     maxSnippetChars: options.maxSmokeSnippetChars,
     versionArgs: options.versionArgs,
+    platform,
+    comSpec: options.comSpec,
+    shell: options.shell,
     spawn: options.spawn,
   });
 

@@ -18,6 +18,19 @@ export interface SpawnPlan {
   warnings: string[];
 }
 
+export interface SpawnPlanInvocation {
+  command: string;
+  args: string[];
+  windowsVerbatimArguments?: boolean;
+}
+
+export interface SpawnPlanInvocationOptions {
+  platform?: NodeJS.Platform;
+  env?: NodeJS.ProcessEnv;
+  comSpec?: string;
+  shell?: string;
+}
+
 export interface PiResolverCandidate {
   source: PiResolverCandidateSource;
   label: string;
@@ -111,6 +124,69 @@ function looksLikePiExecutable(value: string, platform: NodeJS.Platform): boolea
   return basename === "pi" || basename === "pi.cmd" || basename === "pi.exe";
 }
 
+function isWindowsBatchExecutable(value: string, platform: NodeJS.Platform): boolean {
+  if (!isWindowsPlatform(platform)) return false;
+  return /\.(?:cmd|bat)$/iu.test(basenameForPath(value, platform));
+}
+
+function isWindowsPosixShim(value: string, platform: NodeJS.Platform): boolean {
+  return isWindowsPlatform(platform) && basenameForPath(value, platform).toLowerCase() === "pi";
+}
+
+function quoteWindowsCommandArgument(value: string): string {
+  if (/[\r\n]/u.test(value)) {
+    throw new Error("Child Pi arguments must not contain newlines for cmd.exe dispatch.");
+  }
+
+  return `"${value.replace(/(["^&|<>()%!])/gu, "^$1")}"`;
+}
+
+function windowsShellCommand(options: SpawnPlanInvocationOptions): string {
+  const env = options.env ?? process.env;
+  const configuredShell = firstNonEmpty(options.shell, env.PI_SPAWNKIT_SHELL, env.BASH);
+
+  if (!configuredShell) return "bash.exe";
+  if (isPosixLikePath(configuredShell)) return `${posixPath.basename(configuredShell)}.exe`;
+  return configuredShell;
+}
+
+export function buildSpawnPlanInvocation(
+  spawnPlan: SpawnPlan,
+  args: readonly string[],
+  options: SpawnPlanInvocationOptions = {},
+): SpawnPlanInvocation {
+  const platform = options.platform ?? process.platform;
+  const childArgs = [...spawnPlan.argsPrefix, ...args];
+
+  if (isWindowsBatchExecutable(spawnPlan.command, platform)) {
+    const env = options.env ?? process.env;
+    const comSpec = firstNonEmpty(options.comSpec, env.ComSpec, env.COMSPEC, "cmd.exe") as string;
+    const commandLine = [
+      "call",
+      quoteWindowsCommandArgument(spawnPlan.command),
+      ...childArgs.map(quoteWindowsCommandArgument),
+    ].join(" ");
+
+    return {
+      command: comSpec,
+      args: ["/d", "/s", "/c", commandLine],
+      windowsVerbatimArguments: true,
+    };
+  }
+
+  if (isWindowsPosixShim(spawnPlan.command, platform)) {
+    return {
+      command: windowsShellCommand(options),
+      args: [spawnPlan.command, ...childArgs],
+    };
+  }
+
+  return {
+    command: spawnPlan.command,
+    args: childArgs,
+  };
+}
+
 function normalizePathForCompare(value: string, platform: NodeJS.Platform): string {
   const withoutTrailingSeparators = value.replace(/[\\/]+$/u, "");
   const slashNormalized = withoutTrailingSeparators.replace(/\\/gu, "/");
@@ -202,6 +278,39 @@ function collectNpmGlobalBinCandidates(options: ResolvePiOptions, env: NodeJS.Pr
   return uniqueCandidates;
 }
 
+function collectConfiguredCommandCandidates(
+  command: string,
+  options: ResolvePiOptions,
+  env: NodeJS.ProcessEnv,
+  platform: NodeJS.Platform,
+): string[] {
+  if (!isWindowsPlatform(platform) || isPathLike(command, platform) || !looksLikePiExecutable(command, platform)) {
+    return [command];
+  }
+
+  const requestedName = basenameForPath(command, platform).toLowerCase();
+  const executableNames = requestedName === "pi"
+    ? WINDOWS_PI_EXECUTABLE_CANDIDATES
+    : [requestedName];
+  const binEntries = [
+    ...collectNpmGlobalBinCandidates(options, env, platform),
+    ...splitPathEntries(getPathValue(env, platform), platform),
+  ];
+  const candidates: string[] = [];
+
+  for (const binEntry of binEntries) {
+    for (const executableName of executableNames) {
+      const candidate = joinForPathEntry(binEntry, executableName, platform);
+      if (!candidates.some((existing) => pathEquals(existing, candidate, platform))) {
+        candidates.push(candidate);
+      }
+    }
+  }
+
+  candidates.push(command);
+  return candidates;
+}
+
 function fallbackCommand(platform: NodeJS.Platform): string {
   return isWindowsPlatform(platform) ? "pi.cmd" : "pi";
 }
@@ -246,13 +355,23 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
 
   const configuredOverride = firstNonEmpty(options.override, options.piBin, env.PI_BIN, options.packageSetting);
   if (configuredOverride) {
-    const overrideCandidate = await addCandidate("override", "configured override", configuredOverride);
-    const warnings = overrideCandidate && !overrideCandidate.found && isPathLike(configuredOverride, platform)
-      ? [`Configured Pi executable override does not exist or is not executable: ${configuredOverride}`]
-      : [];
+    const configuredCandidates = collectConfiguredCommandCandidates(configuredOverride, options, env, platform);
+    let overrideCandidate: PiResolverCandidate | undefined;
+
+    for (const candidatePath of configuredCandidates) {
+      const candidate = await addCandidate("override", "configured override", candidatePath);
+      if (candidate?.found) {
+        overrideCandidate = candidate;
+        break;
+      }
+    }
+
+    const warnings = overrideCandidate
+      ? []
+      : [`Configured Pi executable override does not exist or is not executable: ${configuredOverride}`];
 
     return {
-      spawnPlan: createSpawnPlan(configuredOverride, "configured", warnings, env, platform),
+      spawnPlan: createSpawnPlan(overrideCandidate?.path ?? configuredOverride, "configured", warnings, env, platform),
       candidates,
     };
   }

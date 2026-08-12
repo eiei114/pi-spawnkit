@@ -75,6 +75,21 @@ test("Windows resolver accepts Git Bash npm shim paths with bare pi", async () =
   assert.equal(result.spawnPlan.envPatch.Path, npmBin);
 });
 
+test("Windows PI_BIN=pi resolves the npm cmd shim instead of preserving an unusable bare command", async () => {
+  const appData = String.raw`C:\Users\alice\AppData\Roaming`;
+  const npmBin = String.raw`C:\Users\alice\AppData\Roaming\npm`;
+  const piCmd = String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`;
+
+  const result = await resolveWithVirtualFiles({
+    platform: "win32",
+    env: { Path: "", APPDATA: appData, PI_BIN: "pi" },
+  }, [piCmd]);
+
+  assert.equal(result.spawnPlan.command, piCmd);
+  assert.equal(result.spawnPlan.confidence, "configured");
+  assert.deepEqual(result.spawnPlan.envPatch, { PI_BIN: piCmd, Path: npmBin });
+});
+
 test("Windows resolver reports a missing plan when PATH has no candidates", async () => {
   const result = await resolveWithVirtualFiles({ platform: "win32", env: { Path: "" } }, []);
 
@@ -101,6 +116,42 @@ test("POSIX resolver supports normal PATH lookup", async () => {
   assert.equal(result.spawnPlan.command, piPath);
   assert.equal(result.spawnPlan.confidence, "medium");
   assert.equal(result.candidates.find((candidate) => candidate.path === piPath)?.source, "path");
+});
+
+test("spawn plan invocation stays direct on POSIX", () => {
+  const invocation = resolver.buildSpawnPlanInvocation({
+    command: "/opt/pi/bin/pi",
+    argsPrefix: ["--profile", "child"],
+    envPatch: {},
+    confidence: "high",
+    warnings: [],
+  }, ["--version"], { platform: "darwin" });
+
+  assert.deepEqual(invocation, {
+    command: "/opt/pi/bin/pi",
+    args: ["--profile", "child", "--version"],
+  });
+});
+
+test("Windows batch SpawnPlans run through ComSpec with safe argv boundaries", () => {
+  const invocation = resolver.buildSpawnPlanInvocation({
+    command: String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`,
+    argsPrefix: [],
+    envPatch: {},
+    confidence: "high",
+    warnings: [],
+  }, ["--prompt", "review & keep \"quoted\""], {
+    platform: "win32",
+    env: { ComSpec: String.raw`C:\Windows\System32\cmd.exe` },
+  });
+
+  assert.equal(invocation.command, String.raw`C:\Windows\System32\cmd.exe`);
+  assert.deepEqual(invocation.args.slice(0, 3), ["/d", "/s", "/c"]);
+  assert.match(invocation.args[3], /^call /u);
+  assert.match(invocation.args[3], /pi\.cmd/iu);
+  assert.match(invocation.args[3], /review \^& keep/iu);
+  assert.match(invocation.args[3], /\^"quoted\^"/u);
+  assert.equal(invocation.windowsVerbatimArguments, true);
 });
 
 test("configured override takes precedence and warns when the path is missing", async () => {
