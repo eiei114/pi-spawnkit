@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-22
+
+### Changed
+
+- Merge the 2026-08-22 managed OSS dependency and maintenance PR batch.
+
 ## [0.2.0] - 2026-08-12
 
 ### Added
