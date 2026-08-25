@@ -33,6 +33,15 @@ test("contributor docs keep the pi-spawnkit package identity", async () => {
   assert.doesNotMatch(contributing, /monorepo publish path/);
 });
 
+test("publish handoff doc tracks the current package version and shipped launcher", async () => {
+  const handoff = await readFile(new URL("../PUBLISH_HANDOFF.md", import.meta.url), "utf8");
+
+  assert.match(handoff, new RegExp(`Version: \`${pkg.version}\``));
+  assert.match(handoff, /lib\/launch\.ts/);
+  assert.doesNotMatch(handoff, /ready_to_publish/);
+  assert.doesNotMatch(handoff, /34 tests passed/);
+});
+
 test("roadmap reflects shipped doctor skeleton, resolver, and smoke diagnostics", async () => {
   const roadmap = await readFile(new URL("../ROADMAP.md", import.meta.url), "utf8");
 
