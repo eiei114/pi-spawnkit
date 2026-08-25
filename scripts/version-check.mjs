@@ -129,6 +129,15 @@ export function findSecretBackedNpmAuthReferences(value, path = "$") {
   return references;
 }
 
+/**
+ * Validate auto-release workflow permissions and release/publish dispatch steps.
+ *
+ * Requires the publish dispatch to pass both `--ref "$TAG"` and the
+ * `workflow_dispatch` input `-f ref="$TAG"` expected by publish.yml checkout.
+ *
+ * @param {Record<string, unknown>} workflow Parsed auto-release workflow YAML.
+ * @throws {Error} When required permissions or commands are missing.
+ */
 export function validateAutoReleaseWorkflow(workflow) {
   const releaseJob = getJob(workflow, "release", ".github/workflows/auto-release.yml");
 
