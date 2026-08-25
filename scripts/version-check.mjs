@@ -160,8 +160,8 @@ export function validateAutoReleaseWorkflow(workflow) {
   assertStepRunsCommand(
     releaseJob,
     "Trigger publish workflow",
-    "gh workflow run publish.yml --ref \"$TAG\"",
-    ".github/workflows/auto-release.yml is missing: gh workflow run publish.yml --ref \"$TAG\"",
+    'gh workflow run publish.yml --ref "$TAG" -f ref="$TAG"',
+    '.github/workflows/auto-release.yml is missing: gh workflow run publish.yml --ref "$TAG" -f ref="$TAG"',
   );
 }
 

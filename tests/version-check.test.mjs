@@ -83,6 +83,23 @@ test("version check validates auto-release workflow permissions and commands", (
     })),
     /gh workflow run publish\.yml/,
   );
+
+  assert.throws(
+    () => validateAutoReleaseWorkflow(createAutoReleaseWorkflow({
+      jobs: {
+        release: {
+          steps: [
+            { name: "Create tag and release", run: 'git tag "$TAG"\ngh release create "$TAG"' },
+            {
+              name: "Trigger publish workflow",
+              run: 'gh workflow run publish.yml --ref "$TAG"',
+            },
+          ],
+        },
+      },
+    })),
+    /-f ref="\$TAG"/,
+  );
 });
 
 test("version check validates trusted publishing without secret-backed npm auth", () => {
