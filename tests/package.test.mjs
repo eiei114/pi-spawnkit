@@ -36,7 +36,8 @@ test("contributor docs keep the pi-spawnkit package identity", async () => {
 test("publish handoff doc tracks the current package version and shipped launcher", async () => {
   const handoff = await readFile(new URL("../PUBLISH_HANDOFF.md", import.meta.url), "utf8");
 
-  assert.match(handoff, new RegExp(`Version: \`${pkg.version}\``));
+  const escapedVersion = pkg.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(handoff, new RegExp(`^Version: \`${escapedVersion}\`$`, "m"));
   assert.match(handoff, /lib\/launch\.ts/);
   assert.doesNotMatch(handoff, /ready_to_publish/);
   assert.doesNotMatch(handoff, /34 tests passed/);
