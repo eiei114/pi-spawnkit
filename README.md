@@ -35,6 +35,10 @@ The common failure is `spawn pi ENOENT` (or a Windows npm-shim launch failure), 
 
 The `/spawnkit:doctor` walking skeleton, `spawnkit_resolve_pi` resolver, and spawn smoke diagnostics are shipped. Session-start process-local env patching and consumer integration notes are also shipped. The session-start patch is intentionally conservative: when high-confidence (or explicit `configured`) resolution passes smoke, only the current Pi process gets an idempotent `PATH` prepend, `PI_BIN`, and `PI_SPAWNKIT_RESOLVED=1`.
 
+## Prerequisites
+
+- Node.js 20 or later (matches Pi package runtime expectations)
+
 ## Install
 
 Install from npm for normal consumer use:
