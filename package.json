@@ -21,6 +21,9 @@
     "url": "https://github.com/eiei114/pi-spawnkit/issues"
   },
   "homepage": "https://github.com/eiei114/pi-spawnkit#readme",
+  "engines": {
+    "node": ">=20"
+  },
   "files": [
     "extensions/",
     "lib/",
