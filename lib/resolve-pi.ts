@@ -44,6 +44,8 @@ export interface PiResolveResult {
   candidates: PiResolverCandidate[];
 }
 
+export type ResolvePiCandidateProbe = "full" | "selection";
+
 export interface ResolvePiOptions {
   env?: NodeJS.ProcessEnv;
   platform?: NodeJS.Platform;
@@ -54,6 +56,8 @@ export interface ResolvePiOptions {
   processArgv?: readonly string[];
   processExecPath?: string;
   fileExists?: (candidatePath: string) => boolean | Promise<boolean>;
+  /** Full probes every PATH/npm candidate for doctor diagnostics; selection stops once a high-confidence plan is chosen. */
+  candidateProbe?: ResolvePiCandidateProbe;
 }
 
 function isWindowsPlatform(platform: NodeJS.Platform): boolean {
@@ -333,8 +337,13 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     processExecPath: options.processExecPath ?? process.execPath,
   };
   const fileExists = options.fileExists ?? ((candidatePath: string) => defaultFileExists(candidatePath, platform));
+  const candidateProbe = options.candidateProbe ?? "full";
   const candidates: PiResolverCandidate[] = [];
   const seenCandidatePaths = new Set<string>();
+
+  const shouldStopCandidateProbe = (confidence: SpawnPlanConfidence | undefined): boolean => (
+    candidateProbe === "selection" && confidence === "high"
+  );
 
   const addCandidate = async (source: PiResolverCandidateSource, label: string, candidatePath: string): Promise<PiResolverCandidate | undefined> => {
     const normalizedPath = normalizePathForCompare(candidatePath, platform);
@@ -388,6 +397,13 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     }
   }
 
+  if (shouldStopCandidateProbe(selectedConfidence)) {
+    return {
+      spawnPlan: createSpawnPlan(selectedCandidate!.path, selectedConfidence!, [], env, platform),
+      candidates,
+    };
+  }
+
   for (const npmGlobalBin of collectNpmGlobalBinCandidates(processHints, env, platform)) {
     for (const executableName of executableNames) {
       const candidate = await addCandidate("npm-global", "npm global bin candidate", joinForPathEntry(npmGlobalBin, executableName, platform));
@@ -396,6 +412,13 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
         selectedConfidence = "high";
       }
     }
+  }
+
+  if (shouldStopCandidateProbe(selectedConfidence)) {
+    return {
+      spawnPlan: createSpawnPlan(selectedCandidate!.path, selectedConfidence!, [], env, platform),
+      candidates,
+    };
   }
 
   for (const pathEntry of splitPathEntries(getPathValue(env, platform), platform)) {
@@ -425,7 +448,10 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
 }
 
 export async function spawnkit_resolve_pi(options: ResolvePiOptions = {}): Promise<SpawnPlan> {
-  const result = await resolvePiExecutable(options);
+  const result = await resolvePiExecutable({
+    ...options,
+    candidateProbe: options.candidateProbe ?? "selection",
+  });
   return result.spawnPlan;
 }
 
