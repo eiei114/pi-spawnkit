@@ -104,6 +104,7 @@ export async function applySpawnkitSessionEnvPatch(options: ApplySpawnkitSession
     ...options,
     env,
     platform,
+    candidateProbe: options.candidateProbe ?? "selection",
   });
   const spawnPlan = resolution.spawnPlan;
 

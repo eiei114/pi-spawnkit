@@ -246,3 +246,45 @@ test("resolver does not treat a directory named pi as an executable", async () =
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("selection probe skips PATH stat churn after high-confidence npm-global match", async () => {
+  const appData = String.raw`C:\Users\alice\AppData\Roaming`;
+  const npmBin = String.raw`C:\Users\alice\AppData\Roaming\npm`;
+  const piCmd = String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`;
+  const pathEntries = Array.from({ length: 200 }, (_, index) => String.raw`C:\tools\path${index}`).join(";");
+  let probeCount = 0;
+  const fileExists = async (candidatePath) => {
+    probeCount += 1;
+    return virtualFileExists([piCmd])(candidatePath);
+  };
+
+  probeCount = 0;
+  const fullResult = await resolver.resolvePiExecutable({
+    platform: "win32",
+    env: { Path: pathEntries, APPDATA: appData },
+    processArgv: [],
+    processExecPath: "",
+    fileExists,
+    candidateProbe: "full",
+  });
+  const fullProbeCount = probeCount;
+
+  probeCount = 0;
+  const selectionResult = await resolver.resolvePiExecutable({
+    platform: "win32",
+    env: { Path: pathEntries, APPDATA: appData },
+    processArgv: [],
+    processExecPath: "",
+    fileExists,
+    candidateProbe: "selection",
+  });
+  const selectionProbeCount = probeCount;
+
+  assert.equal(fullResult.spawnPlan.command, piCmd);
+  assert.equal(selectionResult.spawnPlan.command, piCmd);
+  assert.equal(fullResult.spawnPlan.confidence, "high");
+  assert.equal(selectionResult.spawnPlan.confidence, "high");
+  assert.ok(fullProbeCount >= 600, `expected full probe to scan PATH entries, got ${fullProbeCount}`);
+  assert.ok(selectionProbeCount < 10, `expected selection probe to stop early, got ${selectionProbeCount}`);
+  assert.ok(selectionProbeCount < fullProbeCount / 10);
+});
