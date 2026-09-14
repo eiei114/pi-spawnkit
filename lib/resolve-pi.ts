@@ -18,6 +18,10 @@ export interface SpawnPlan {
   warnings: string[];
 }
 
+export function mergeSpawnPlanEnv(baseEnv: NodeJS.ProcessEnv, spawnPlan: SpawnPlan): NodeJS.ProcessEnv {
+  return { ...baseEnv, ...spawnPlan.envPatch };
+}
+
 export interface SpawnPlanInvocation {
   command: string;
   args: string[];
@@ -404,7 +408,7 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     };
   }
 
-  for (const npmGlobalBin of collectNpmGlobalBinCandidates(processHints, env, platform)) {
+  for (const npmGlobalBin of collectNpmGlobalBinCandidates({ ...options, ...processHints }, env, platform)) {
     for (const executableName of executableNames) {
       const candidate = await addCandidate("npm-global", "npm global bin candidate", joinForPathEntry(npmGlobalBin, executableName, platform));
       if (!selectedCandidate && candidate?.found) {

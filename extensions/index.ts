@@ -4,7 +4,7 @@ import { collectSpawnkitDoctorDiagnostics, renderSpawnkitDoctorDiagnostics, runS
 import { spawnWithSpawnPlan } from "../lib/launch.ts";
 import { applySpawnkitSessionEnvPatch } from "../lib/session-env.ts";
 import { getLastSpawnkitSessionEnvPatchDiagnostics } from "../lib/session-state.ts";
-import { buildSpawnPlanInvocation, renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
+import { buildSpawnPlanInvocation, mergeSpawnPlanEnv, renderSpawnPlan, spawnkit_resolve_pi } from "../lib/resolve-pi.ts";
 
 const resolvePiToolParameters = Type.Object({
   override: Type.Optional(Type.String({ description: "Explicit Pi executable path. Takes precedence over PI_BIN." })),
@@ -22,6 +22,7 @@ function wantsJsonOutput(args: unknown): boolean {
 export {
   applySpawnkitSessionEnvPatch,
   buildSpawnPlanInvocation,
+  mergeSpawnPlanEnv,
   collectSpawnkitDoctorDiagnostics,
   getLastSpawnkitSessionEnvPatchDiagnostics,
   renderSpawnkitDoctorDiagnostics,

@@ -247,6 +247,37 @@ test("resolver does not treat a directory named pi as an executable", async () =
   }
 });
 
+test("mergeSpawnPlanEnv overlays SpawnPlan envPatch onto the base env", () => {
+  const merged = resolver.mergeSpawnPlanEnv(
+    { PATH: "/usr/bin", HOME: "/home/alice" },
+    {
+      command: "/opt/pi/bin/pi",
+      argsPrefix: [],
+      envPatch: { PI_BIN: "/opt/pi/bin/pi", PATH: "/opt/pi/bin:/usr/bin" },
+      confidence: "high",
+      warnings: [],
+    },
+  );
+
+  assert.equal(merged.HOME, "/home/alice");
+  assert.equal(merged.PI_BIN, "/opt/pi/bin/pi");
+  assert.equal(merged.PATH, "/opt/pi/bin:/usr/bin");
+});
+
+test("resolver honors explicit npmGlobalBin override before APPDATA hints", async () => {
+  const customBin = String.raw`C:\custom\npm`;
+  const piCmd = String.raw`C:\custom\npm\pi.cmd`;
+
+  const result = await resolveWithVirtualFiles({
+    platform: "win32",
+    env: { Path: "" },
+    npmGlobalBin: customBin,
+  }, [piCmd]);
+
+  assert.equal(result.spawnPlan.command, piCmd);
+  assert.equal(result.candidates.some((candidate) => candidate.path === piCmd && candidate.source === "npm-global"), true);
+});
+
 test("selection probe skips PATH stat churn after high-confidence npm-global match", async () => {
   const appData = String.raw`C:\Users\alice\AppData\Roaming`;
   const npmBin = String.raw`C:\Users\alice\AppData\Roaming\npm`;

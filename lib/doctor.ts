@@ -3,9 +3,10 @@ import type { Readable } from "node:stream";
 import {
   buildSpawnPlanInvocation,
   getPathValue,
-  getPlatformPathDelimiter,
+  mergeSpawnPlanEnv,
   renderSpawnPlan,
   resolvePiExecutable,
+  splitPathEntries,
   type PiResolverCandidate,
   type SpawnPlan,
 } from "./resolve-pi.ts";
@@ -136,10 +137,7 @@ export async function runSpawnSmokeTest(spawnPlan: SpawnPlan, options: SpawnSmok
   const stdout = createSnippetCollector(maxSnippetChars);
   const stderr = createSnippetCollector(maxSnippetChars);
   const spawn = options.spawn ?? defaultSpawn;
-  const env: NodeJS.ProcessEnv = {
-    ...(options.env ?? process.env),
-    ...spawnPlan.envPatch,
-  };
+  const env = mergeSpawnPlanEnv(options.env ?? process.env, spawnPlan);
   const invocation = buildSpawnPlanInvocation(spawnPlan, options.versionArgs ?? ["--version"], {
     platform: options.platform,
     env,
@@ -245,8 +243,7 @@ export async function collectSpawnkitDoctorDiagnostics(options?: SpawnkitDoctorO
 export async function collectSpawnkitDoctorDiagnostics(envOrOptions?: NodeJS.ProcessEnv | SpawnkitDoctorOptions): Promise<SpawnkitDoctorDiagnostics> {
   const options = normalizeDoctorOptions(envOrOptions);
   const env = options.env;
-  const pathValue = getPathValue(env, process.platform);
-  const pathEntries = pathValue.split(getPlatformPathDelimiter(process.platform)).filter((entry) => entry.length > 0);
+  const pathEntries = splitPathEntries(getPathValue(env, process.platform), process.platform);
   const piBin = env.PI_BIN || undefined;
   const resolution = await resolvePiExecutable({ env });
   const smoke = options.smoke
