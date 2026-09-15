@@ -1,3 +1,4 @@
+import { isFalsyEnvFlag, isTruthyEnvFlag } from "./env-flags.ts";
 import {
   getPathKey,
   resolvePiExecutable,
@@ -27,24 +28,9 @@ export interface ApplySpawnkitSessionEnvPatchOptions extends ResolvePiOptions {
   spawn?: SpawnSmokeSpawner;
 }
 
-function normalizedFlag(value: string | undefined): string | undefined {
-  const normalized = value?.trim().toLowerCase();
-  return normalized ? normalized : undefined;
-}
-
-function isTruthyFlag(value: string | undefined): boolean {
-  const normalized = normalizedFlag(value);
-  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
-}
-
-function isFalsyFlag(value: string | undefined): boolean {
-  const normalized = normalizedFlag(value);
-  return normalized === "0" || normalized === "false" || normalized === "no" || normalized === "off" || normalized === "disabled";
-}
-
 function disabledReason(env: NodeJS.ProcessEnv): string | undefined {
-  if (isTruthyFlag(env[SESSION_ENV_PATCH_DISABLE_ENV])) return `disabled by ${SESSION_ENV_PATCH_DISABLE_ENV}`;
-  if (isFalsyFlag(env[SESSION_ENV_PATCH_MODE_ENV])) return `disabled by ${SESSION_ENV_PATCH_MODE_ENV}`;
+  if (isTruthyEnvFlag(env[SESSION_ENV_PATCH_DISABLE_ENV])) return `disabled by ${SESSION_ENV_PATCH_DISABLE_ENV}`;
+  if (isFalsyEnvFlag(env[SESSION_ENV_PATCH_MODE_ENV])) return `disabled by ${SESSION_ENV_PATCH_MODE_ENV}`;
   return undefined;
 }
 
