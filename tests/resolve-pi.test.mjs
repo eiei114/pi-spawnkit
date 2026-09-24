@@ -118,6 +118,18 @@ test("POSIX resolver supports normal PATH lookup", async () => {
   assert.equal(result.candidates.find((candidate) => candidate.path === piPath)?.source, "path");
 });
 
+test("SpawnPlan args are composed in prefix-first order", () => {
+  const args = resolver.buildSpawnPlanArgs({
+    command: "/opt/pi/bin/pi",
+    argsPrefix: ["--profile", "child"],
+    envPatch: {},
+    confidence: "high",
+    warnings: [],
+  }, ["--version"]);
+
+  assert.deepEqual(args, ["--profile", "child", "--version"]);
+});
+
 test("spawn plan invocation stays direct on POSIX", () => {
   const invocation = resolver.buildSpawnPlanInvocation({
     command: "/opt/pi/bin/pi",

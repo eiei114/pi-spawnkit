@@ -1,6 +1,7 @@
 import { spawn as nodeSpawn } from "node:child_process";
 import type { Readable } from "node:stream";
 import {
+  buildSpawnPlanArgs,
   buildSpawnPlanInvocation,
   getPathValue,
   mergeSpawnPlanEnv,
@@ -131,14 +132,15 @@ function statusForSpawnError(code: string | undefined): Exclude<SpawnSmokeStatus
 }
 
 export async function runSpawnSmokeTest(spawnPlan: SpawnPlan, options: SpawnSmokeOptions = {}): Promise<SpawnSmokeResult> {
-  const args = [...spawnPlan.argsPrefix, ...(options.versionArgs ?? ["--version"])] as string[];
+  const versionArgs = options.versionArgs ?? ["--version"];
   const timeoutMs = Math.max(1, options.timeoutMs ?? DEFAULT_SPAWN_SMOKE_TIMEOUT_MS);
   const maxSnippetChars = Math.max(0, options.maxSnippetChars ?? DEFAULT_SPAWN_SMOKE_MAX_SNIPPET_CHARS);
   const stdout = createSnippetCollector(maxSnippetChars);
   const stderr = createSnippetCollector(maxSnippetChars);
   const spawn = options.spawn ?? defaultSpawn;
   const env = mergeSpawnPlanEnv(options.env ?? process.env, spawnPlan);
-  const invocation = buildSpawnPlanInvocation(spawnPlan, options.versionArgs ?? ["--version"], {
+  const args = buildSpawnPlanArgs(spawnPlan, versionArgs);
+  const invocation = buildSpawnPlanInvocation(spawnPlan, versionArgs, {
     platform: options.platform,
     env,
     comSpec: options.comSpec,
