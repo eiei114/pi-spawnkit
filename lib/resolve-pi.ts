@@ -35,6 +35,10 @@ export interface SpawnPlanInvocationOptions {
   shell?: string;
 }
 
+export function buildSpawnPlanArgs(spawnPlan: SpawnPlan, args: readonly string[]): string[] {
+  return [...spawnPlan.argsPrefix, ...args];
+}
+
 export interface PiResolverCandidate {
   source: PiResolverCandidateSource;
   label: string;
@@ -164,7 +168,7 @@ export function buildSpawnPlanInvocation(
   options: SpawnPlanInvocationOptions = {},
 ): SpawnPlanInvocation {
   const platform = options.platform ?? process.platform;
-  const childArgs = [...spawnPlan.argsPrefix, ...args];
+  const childArgs = buildSpawnPlanArgs(spawnPlan, args);
 
   if (isWindowsBatchExecutable(spawnPlan.command, platform)) {
     const env = options.env ?? process.env;
