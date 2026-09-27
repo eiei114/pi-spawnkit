@@ -1,35 +1,21 @@
 # Changelog
 
+## Unreleased
+
 ## [0.2.6] - 2026-09-27
 
 - chore: periodic patch bump after 7+ days without npm publish
 
-## 0.2.5 - 2026-09-27
 
-- chore: periodic patch bump after 7+ days without npm publish
 
-## 0.2.4 - 2026-09-27
 
-- chore: periodic patch bump after 7+ days without npm publish
-
-## 0.2.3 - 2026-09-27
-
-- chore: periodic patch bump after 7+ days without npm publish
-
-## 0.2.2 - 2026-09-27
-
-- chore: periodic patch bump after 7+ days without npm publish
 
 All notable changes to this project will be documented in this file.
-
-## [Unreleased]
-
 ## [0.2.1] - 2026-08-22
 
 ### Changed
 
 - Merge the 2026-08-22 managed OSS dependency and maintenance PR batch.
-
 ## [0.2.0] - 2026-08-12
 
 ### Added
@@ -42,7 +28,6 @@ All notable changes to this project will be documented in this file.
 - Route Windows npm `pi.cmd` and `pi.bat` shims through `ComSpec` instead of passing batch files directly to Node `spawn`.
 - Route Windows Git Bash-style `pi` shims through `bash.exe` and resolve a bare `PI_BIN=pi` against npm global bins and PATH before using it.
 - Document that `pi-spawnkit` is the Pi gstack companion for Codex reviews and delegated Pi-agent reviews.
-
 ## [0.1.0] - 2026-08-07
 
 ### Added
