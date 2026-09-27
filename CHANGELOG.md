@@ -18,19 +18,15 @@ All notable changes to this project will be documented in this file.
 ## [0.2.5] - 2026-09-28
 
 - chore: periodic patch bump after 7+ days without npm publish
-
 ## [0.2.4] - 2026-09-28
 
 - chore: periodic patch bump after 7+ days without npm publish
-
 ## [0.2.3] - 2026-09-28
 
 - chore: periodic patch bump after 7+ days without npm publish
-
 ## [0.2.2] - 2026-09-28
 
 - chore: periodic patch bump after 7+ days without npm publish
-
 ## [0.2.1] - 2026-08-22
 
 ### Changed
