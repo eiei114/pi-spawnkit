@@ -4,8 +4,6 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
-## Unreleased
-
 ## [0.2.6] - 2026-09-27
 
 - chore: periodic patch bump after 7+ days without npm publish
@@ -65,3 +63,5 @@ All notable changes to this project will be documented in this file.
 
 - Correct stale `create-pi-extension` / monorepo release wording in `CONTRIBUTING.md`.
 - Align README status with the shipped `/spawnkit:doctor` walking skeleton, resolver, smoke diagnostics, session-start patch, and consumer integration notes.
+## Unreleased
+
