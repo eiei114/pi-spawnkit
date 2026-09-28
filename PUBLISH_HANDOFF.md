@@ -1,7 +1,7 @@
 # Publish Handoff
 
 Package: `pi-spawnkit`
-Version: `0.2.1`
+Version: `0.2.6`
 Status: `published`
 
 ## What was built
