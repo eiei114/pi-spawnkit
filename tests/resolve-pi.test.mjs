@@ -296,8 +296,14 @@ test("selection probe skips PATH stat churn after high-confidence npm-global mat
   const piCmd = String.raw`C:\Users\alice\AppData\Roaming\npm\pi.cmd`;
   const pathEntries = Array.from({ length: 200 }, (_, index) => String.raw`C:\tools\path${index}`).join(";");
   let probeCount = 0;
+  let activeProbes = 0;
+  let maxConcurrentProbes = 0;
   const fileExists = async (candidatePath) => {
     probeCount += 1;
+    activeProbes += 1;
+    maxConcurrentProbes = Math.max(maxConcurrentProbes, activeProbes);
+    await new Promise((resolve) => setImmediate(resolve));
+    activeProbes -= 1;
     return virtualFileExists([piCmd])(candidatePath);
   };
 
@@ -311,8 +317,10 @@ test("selection probe skips PATH stat churn after high-confidence npm-global mat
     candidateProbe: "full",
   });
   const fullProbeCount = probeCount;
+  const fullMaxConcurrentProbes = maxConcurrentProbes;
 
   probeCount = 0;
+  maxConcurrentProbes = 0;
   const selectionResult = await resolver.resolvePiExecutable({
     platform: "win32",
     env: { Path: pathEntries, APPDATA: appData },
@@ -322,12 +330,15 @@ test("selection probe skips PATH stat churn after high-confidence npm-global mat
     candidateProbe: "selection",
   });
   const selectionProbeCount = probeCount;
+  const selectionMaxConcurrentProbes = maxConcurrentProbes;
 
   assert.equal(fullResult.spawnPlan.command, piCmd);
   assert.equal(selectionResult.spawnPlan.command, piCmd);
   assert.equal(fullResult.spawnPlan.confidence, "high");
   assert.equal(selectionResult.spawnPlan.confidence, "high");
   assert.ok(fullProbeCount >= 600, `expected full probe to scan PATH entries, got ${fullProbeCount}`);
+  assert.ok(fullMaxConcurrentProbes > 1, `expected full probe to overlap file checks, got ${fullMaxConcurrentProbes}`);
+  assert.equal(selectionMaxConcurrentProbes, 1);
   assert.ok(selectionProbeCount < 10, `expected selection probe to stop early, got ${selectionProbeCount}`);
   assert.ok(selectionProbeCount < fullProbeCount / 10);
 });
