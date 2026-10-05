@@ -366,8 +366,27 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
       executableName: basenameForPath(candidatePath, platform),
       found,
     };
-    candidates.push(candidate);
     return candidate;
+  };
+
+  const recordCandidates = (probedCandidates: Array<PiResolverCandidate | undefined>): void => {
+    candidates.push(...probedCandidates.filter((candidate): candidate is PiResolverCandidate => candidate !== undefined));
+  };
+
+  const probeBatch = async (
+    source: PiResolverCandidateSource,
+    label: string,
+    candidatePaths: string[],
+  ): Promise<Array<PiResolverCandidate | undefined>> => {
+    if (candidateProbe === "full") {
+      return Promise.all(candidatePaths.map((candidatePath) => addCandidate(source, label, candidatePath)));
+    }
+
+    const probedCandidates: Array<PiResolverCandidate | undefined> = [];
+    for (const candidatePath of candidatePaths) {
+      probedCandidates.push(await addCandidate(source, label, candidatePath));
+    }
+    return probedCandidates;
   };
 
   const configuredOverride = firstNonEmpty(options.override, options.piBin, env.PI_BIN, options.packageSetting);
@@ -377,6 +396,7 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
 
     for (const candidatePath of configuredCandidates) {
       const candidate = await addCandidate("override", "configured override", candidatePath);
+      if (candidate) candidates.push(candidate);
       if (candidate?.found) {
         overrideCandidate = candidate;
         break;
@@ -399,6 +419,7 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
 
   for (const hint of collectProcessHintCandidates(processHints, platform)) {
     const candidate = await addCandidate("process", "current process hint", hint);
+    if (candidate) candidates.push(candidate);
     if (!selectedCandidate && candidate?.found) {
       selectedCandidate = candidate;
       selectedConfidence = "high";
@@ -412,13 +433,15 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     };
   }
 
-  for (const npmGlobalBin of collectNpmGlobalBinCandidates({ ...options, ...processHints }, env, platform)) {
-    for (const executableName of executableNames) {
-      const candidate = await addCandidate("npm-global", "npm global bin candidate", joinForPathEntry(npmGlobalBin, executableName, platform));
-      if (!selectedCandidate && candidate?.found) {
-        selectedCandidate = candidate;
-        selectedConfidence = "high";
-      }
+  const npmGlobalCandidates = collectNpmGlobalBinCandidates({ ...options, ...processHints }, env, platform).flatMap((npmGlobalBin) => (
+    executableNames.map((executableName) => joinForPathEntry(npmGlobalBin, executableName, platform))
+  ));
+  const npmGlobalProbes = await probeBatch("npm-global", "npm global bin candidate", npmGlobalCandidates);
+  recordCandidates(npmGlobalProbes);
+  for (const candidate of npmGlobalProbes) {
+    if (!selectedCandidate && candidate?.found) {
+      selectedCandidate = candidate;
+      selectedConfidence = "high";
     }
   }
 
@@ -429,13 +452,15 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     };
   }
 
-  for (const pathEntry of splitPathEntries(getPathValue(env, platform), platform)) {
-    for (const executableName of executableNames) {
-      const candidate = await addCandidate("path", "PATH lookup", joinForPathEntry(pathEntry, executableName, platform));
-      if (!selectedCandidate && candidate?.found) {
-        selectedCandidate = candidate;
-        selectedConfidence = "medium";
-      }
+  const pathCandidates = splitPathEntries(getPathValue(env, platform), platform).flatMap((pathEntry) => (
+    executableNames.map((executableName) => joinForPathEntry(pathEntry, executableName, platform))
+  ));
+  const pathProbes = await probeBatch("path", "PATH lookup", pathCandidates);
+  recordCandidates(pathProbes);
+  for (const candidate of pathProbes) {
+    if (!selectedCandidate && candidate?.found) {
+      selectedCandidate = candidate;
+      selectedConfidence = "medium";
     }
   }
 
