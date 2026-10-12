@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { EventEmitter } from "node:events";
-import { PassThrough } from "node:stream";
 import test from "node:test";
+import { createMockSpawn } from "./helpers/spawn-mock.mjs";
 
 const doctor = await import("../lib/doctor.ts");
 
@@ -14,29 +13,6 @@ function createPlan(overrides = {}) {
     warnings: [],
     ...overrides,
   };
-}
-
-class MockChild extends EventEmitter {
-  stdout = new PassThrough();
-  stderr = new PassThrough();
-  killCalls = [];
-
-  kill(signal) {
-    this.killCalls.push(signal);
-    return true;
-  }
-}
-
-function createMockSpawn(script) {
-  const calls = [];
-  const spawn = (command, args, options) => {
-    const child = new MockChild();
-    calls.push({ command, args, options, child });
-    script(child, { command, args, options });
-    return child;
-  };
-
-  return { calls, spawn };
 }
 
 test("spawn smoke reports ok, uses SpawnPlan args/env, and extracts version text", async () => {

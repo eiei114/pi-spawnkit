@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { EventEmitter } from "node:events";
-import { PassThrough } from "node:stream";
 import test from "node:test";
+import { createMockSpawn } from "./helpers/spawn-mock.mjs";
 
 const sessionEnv = await import("../lib/session-env.ts");
 const sessionState = await import("../lib/session-state.ts");
@@ -14,23 +13,6 @@ function normalizeVirtualPath(candidatePath) {
 function virtualFileExists(paths) {
   const existing = new Set(paths.map(normalizeVirtualPath));
   return (candidatePath) => existing.has(normalizeVirtualPath(candidatePath));
-}
-
-class MockChild extends EventEmitter {
-  stdout = new PassThrough();
-  stderr = new PassThrough();
-}
-
-function createMockSpawn(script) {
-  const calls = [];
-  const spawn = (command, args, options) => {
-    const child = new MockChild();
-    calls.push({ command, args, options, child });
-    script(child, { command, args, options });
-    return child;
-  };
-
-  return { calls, spawn };
 }
 
 test.beforeEach(() => {
