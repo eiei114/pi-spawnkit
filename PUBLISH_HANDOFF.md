@@ -1,8 +1,10 @@
 # Publish Handoff
 
 Package: `pi-spawnkit`
-Version: `0.2.7`
-Status: `published`
+Version: `0.2.8`
+Status: `prepared`
+
+Version 0.2.8 is prepared for review; this change does not authorize npm publication.
 
 ## What was built
 
