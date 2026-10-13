@@ -21,7 +21,7 @@ jobs:
         id: check
         shell: bash
         run: |
-          BEFORE="${{ github.event.before }}"
+          BEFORE="$(git rev-parse HEAD^ 2>/dev/null || true)"
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           TAG="v${CURRENT_VERSION}"
 
