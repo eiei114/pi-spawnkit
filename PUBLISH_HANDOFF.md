@@ -64,7 +64,7 @@ total files: 16
 
 ## Human action
 
-1. Review and merge the release-prep PR intentionally. Merge alone does not create a release or publish the package.
+1. Do not merge until the protected-action separation and release approval are resolved. Once that gate is satisfied, review and merge the release-prep PR intentionally. Merge alone does not create a release or publish the package.
 2. Confirm npm Trusted Publishing is configured for:
    - package: `pi-spawnkit`
    - repository: `eiei114/pi-spawnkit`
