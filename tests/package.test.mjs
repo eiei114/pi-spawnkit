@@ -19,10 +19,10 @@ test("ci script runs release version check before pack validation", () => {
   assert.ok(pkg.scripts.ci.indexOf("npm run pack:check") > pkg.scripts.ci.indexOf("npm run version:check"));
 });
 
-test("Pi SDK 1.1.0 remains a dev/test pin while peer ranges stay open", () => {
+test("Pi SDK 1.2.0 remains a dev/test pin while peer ranges stay open", () => {
   for (const name of ["@earendil-works/pi-agent-core", "@earendil-works/pi-ai",
     "@earendil-works/pi-coding-agent", "@earendil-works/pi-tui"]) {
-    assert.equal(pkg.devDependencies[name], "1.1.0");
+    assert.equal(pkg.devDependencies[name], "1.2.0");
     assert.equal(pkg.peerDependencies[name], "*");
   }
 });

@@ -2,10 +2,10 @@
   "schema_version": 1,
   "verification_contract": "pi-sdk-behavior-v2",
   "sdk_versions": {
-    "@earendil-works/pi-agent-core": "1.1.0",
-    "@earendil-works/pi-ai": "1.1.0",
-    "@earendil-works/pi-coding-agent": "1.1.0",
-    "@earendil-works/pi-tui": "1.1.0"
+    "@earendil-works/pi-agent-core": "1.2.0",
+    "@earendil-works/pi-ai": "1.2.0",
+    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-tui": "1.2.0"
   },
   "platform": "win32",
   "model_inference": "none; actual Pi host loads the package and handles /spawnkit:doctor RPC; no extension lifecycle or feature mocks",
@@ -32,12 +32,12 @@
       "command": "npm run smoke:pi",
       "exit_code": 0,
       "passed": true,
-      "evidence": "{\"output\":[{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]},{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.1.0\",\"exitCode\":0}}},{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}]}",
+      "evidence": "{\"output\":[{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]},{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.2.0\",\"exitCode\":0}}},{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}]}",
       "assertions": [
         {
           "id": "feature_response",
           "expected": "The real /spawnkit:doctor command returns diagnostics and successfully smokes the pinned Pi executable",
-          "observed": "{\"platform\":\"win32\",\"command\":\"pi.cmd\",\"confidence\":\"configured\",\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.1.0\",\"exitCode\":0},\"prompt_success\":true}",
+          "observed": "{\"platform\":\"win32\",\"command\":\"pi.cmd\",\"confidence\":\"configured\",\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.2.0\",\"exitCode\":0},\"prompt_success\":true}",
           "passed": true
         }
       ]
@@ -62,7 +62,7 @@
       "command": "npm run smoke:pi",
       "exit_code": 0,
       "passed": true,
-      "evidence": "{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]}\n{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.1.0\",\"exitCode\":0}}}\n{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}\n--- second Pi host ---\n{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]}\n{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.1.0\",\"exitCode\":0}}}\n{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}",
+      "evidence": "{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]}\n{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.2.0\",\"exitCode\":0}}}\n{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}\n--- second Pi host ---\n{\"type\":\"response\",\"command\":\"get_commands\",\"success\":true,\"registered_extension_commands\":[\"spawnkit:doctor\"]}\n{\"type\":\"extension_ui_request\",\"method\":\"notify\",\"diagnostics\":{\"platform\":\"win32\",\"sessionEnvPatch\":{\"status\":\"disabled\"},\"spawnPlan\":{\"command\":\"pi.cmd\",\"confidence\":\"configured\"},\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.2.0\",\"exitCode\":0}}}\n{\"type\":\"response\",\"command\":\"prompt\",\"success\":true,\"disposition\":\"handled\"}",
       "assertions": [
         {
           "id": "reloaded_extension_registered",
@@ -73,7 +73,7 @@
         {
           "id": "reloaded_feature_response",
           "expected": "The second host returns the actual doctor response and a successful pinned-Pi smoke",
-          "observed": "{\"platform\":\"win32\",\"command\":\"pi.cmd\",\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.1.0\",\"exitCode\":0},\"prompt_success\":true}",
+          "observed": "{\"platform\":\"win32\",\"command\":\"pi.cmd\",\"smoke\":{\"status\":\"ok\",\"versionText\":\"1.2.0\",\"exitCode\":0},\"prompt_success\":true}",
           "passed": true
         },
         {
@@ -89,12 +89,12 @@
       "command": "npm run smoke:pi",
       "exit_code": 0,
       "passed": true,
-      "evidence": "1.1.0\n",
+      "evidence": "1.2.0\n",
       "assertions": [
         {
           "id": "native_shell_boundary",
           "expected": "The native host shell launches the pinned local Pi CLI and returns its exact version",
-          "observed": "{\"exit_code\":0,\"process_exited\":true,\"output\":\"1.1.0\",\"expectedVersion\":\"1.1.0\"}",
+          "observed": "{\"exit_code\":0,\"process_exited\":true,\"output\":\"1.2.0\",\"expectedVersion\":\"1.2.0\"}",
           "passed": true
         }
       ]
