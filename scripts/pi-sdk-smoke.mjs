@@ -13,12 +13,12 @@ const reportPath = process.argv.includes("--update-curated-report")
   : resolve(root, ".tmp/pi-sdk-smoke.json");
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 const manifest = readJson(resolve(root, "package.json"));
-const expectedVersions = Object.fromEntries(SDK_NAMES.map((name) => [name, "1.1.0"]));
+const expectedVersions = Object.fromEntries(SDK_NAMES.map((name) => [name, "1.2.0"]));
 const sdkVersions = Object.fromEntries(SDK_NAMES.map((name) =>
   [name, readJson(resolve(root, "node_modules", name, "package.json")).version]));
 for (const name of SDK_NAMES) {
   if (manifest.devDependencies?.[name] !== expectedVersions[name] || sdkVersions[name] !== expectedVersions[name]) {
-    throw new Error(`Smoke requires exact Pi SDK 1.1.0 dev/test pin for ${name}: manifest=${manifest.devDependencies?.[name]}, installed=${sdkVersions[name]}`);
+    throw new Error(`Smoke requires exact Pi SDK 1.2.0 dev/test pin for ${name}: manifest=${manifest.devDependencies?.[name]}, installed=${sdkVersions[name]}`);
   }
 }
 
@@ -144,7 +144,7 @@ async function runRpc(name, env = baseEnv, runFeature = true) {
     const hasLoadError = EXTENSION_LOAD_ERROR_PATTERN.test(fullOutput) || rows.some((row) => row?.type === "extension_error");
     const assertions = behaviorAssertions(name, {
       responses: rows, commandNames, promptResponse, fullOutput, exit_code: closeResult?.code ?? 1,
-      processExited: closeResult !== undefined, expectedVersion: "1.1.0", piCli: piCommand,
+      processExited: closeResult !== undefined, expectedVersion: "1.2.0", piCli: piCommand,
     });
     return {
       name, command: "npm run smoke:pi", exit_code: closeResult?.code ?? 1,
@@ -168,7 +168,7 @@ async function runRpc(name, env = baseEnv, runFeature = true) {
     const hasLoadError = EXTENSION_LOAD_ERROR_PATTERN.test(fullOutput) || rows.some((row) => row?.type === "extension_error");
     const assertions = behaviorAssertions(name, {
       responses: rows, commandNames: [], fullOutput, exit_code: closeResult?.code ?? 1,
-      processExited: closeResult !== undefined, expectedVersion: "1.1.0", piCli: piCommand,
+      processExited: closeResult !== undefined, expectedVersion: "1.2.0", piCli: piCommand,
     });
     return { name, command: "npm run smoke:pi", exit_code: closeResult?.code ?? 1, passed: false,
       evidence: evidenceRows(rows, failure), assertions, hasUnhandledError, hasLoadError, fullOutput,
@@ -242,7 +242,7 @@ try {
     firstExited: firstReloadHost.processExited,
     secondExited: secondReloadHost.processExited,
     processExited: firstReloadHost.processExited,
-    expectedVersion: "1.1.0",
+    expectedVersion: "1.2.0",
     piCli: piCommand,
   });
   const reloadOutput = `${firstSummary.output.map((row) => JSON.stringify(row)).join("\n")}\n--- second Pi host ---\n${secondSummary.output.map((row) => JSON.stringify(row)).join("\n")}`;
@@ -259,7 +259,7 @@ try {
   const shellExitCode = shell.result.status ?? 1;
   const shellAssertions = behaviorAssertions("host_shell", {
     fullOutput: shell.output, exit_code: shellExitCode, processExited: shell.result.status !== null && !shell.result.error,
-    expectedVersion: "1.1.0", piCli,
+    expectedVersion: "1.2.0", piCli,
   });
   cases.push({ name: "host_shell", command: "npm run smoke:pi", exit_code: shellExitCode,
     passed: shellExitCode === 0 && !shell.result.error && shellAssertions.every((item) => item.passed),
