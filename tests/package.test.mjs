@@ -67,6 +67,39 @@ test("readme reflects shipped doctor skeleton, resolver, and smoke diagnostics",
   assert.doesNotMatch(readme, /## Planned MVP/);
 });
 
+test("readme doctor example includes current human-readable diagnostics fields", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+
+  for (const field of [
+    "process.execPath:",
+    "resolver candidates:",
+    "selected SpawnPlan:",
+    "session env patch:",
+    "smokeStatus:",
+    "timeoutMs:",
+    "timedOut:",
+    "exitCode:",
+    "signal:",
+    "stdout snippet:",
+    "stderr snippet:",
+    "error:",
+  ]) {
+    assert.ok(readme.includes(field), `README doctor example should include ${field}`);
+  }
+});
+
+test("readme doctor example shows the PI_BIN value applied to the session", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+  const example = readme.match(/Example summary[^\n]*\n\n```text\n([\s\S]*?)\n```/u)?.[1];
+
+  assert.ok(example, "README should include the doctor summary example");
+  assert.match(example, /^  status: applied$/m);
+
+  const reportedPiBin = example.match(/^PI_BIN: (.+)$/m)?.[1];
+  const patchedPiBin = example.match(/^    PI_BIN: (.+)$/m)?.[1];
+  assert.equal(reportedPiBin, patchedPiBin, "doctor output should report the PI_BIN value applied by the session patch");
+});
+
 test("readme identifies the Pi gstack integration and shared launcher", async () => {
   const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 
