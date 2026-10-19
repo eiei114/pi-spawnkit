@@ -25,7 +25,7 @@ Version 0.2.10 is prepared for review; this change does not authorize npm public
 - `npm run version:check` passed.
 - `npm run ci` passed:
   - `npm run typecheck` passed.
-  - `npm test` passed: 56 tests, including the README doctor example and manual-dispatch release contract tests.
+  - `npm test` passed: 57 tests, including the README doctor example and manual-dispatch release contract tests.
   - `npm run smoke:pi` passed.
   - `npm run version:check` passed.
   - `npm run pack:check` / `npm pack --dry-run` passed.
@@ -57,8 +57,8 @@ Dry-run tarball summary:
 name: pi-spawnkit
 version: 0.2.10
 filename: pi-spawnkit-0.2.10.tgz
-package size: 18.4 kB
-unpacked size: 68.2 kB
+package size: 18.3 kB
+unpacked size: 68.3 kB
 total files: 16
 ```
 

@@ -80,7 +80,7 @@ spawnkit doctor
 platform: win32
 PATH entries: 42
 process.execPath: C:\Program Files\nodejs\node.exe
-PI_BIN: <unset>
+PI_BIN: C:\Users\alice\AppData\Roaming\npm\pi.cmd
 resolver candidates:
   - [npm-global] C:\Users\alice\AppData\Roaming\npm\pi.cmd: found
   - ...
