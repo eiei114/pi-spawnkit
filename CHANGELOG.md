@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.10] - 2026-10-20
+
+### Changed
+
+- Refresh the `/spawnkit:doctor` README example to match the current diagnostics output.
+
 ## [0.2.9] - 2026-10-16
 
 ### Changed

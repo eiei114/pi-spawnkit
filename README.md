@@ -73,22 +73,46 @@ pi install -l ./path/to/pi-spawnkit
 
 Run `/spawnkit:doctor` inside Pi after loading the package to print platform, PATH entry count, `process.execPath`, `PI_BIN`, resolver candidates, the selected SpawnPlan, session env patch status, smoke status, bounded stdout/stderr snippets, version text when available, and warnings. Use `/spawnkit:doctor --json` for structured diagnostics. Missing candidates are diagnostics warnings rather than hard failures.
 
-Example summary:
+Example summary (paths and values vary by host; long paths and the resolver candidate list are shortened):
 
 ```text
 spawnkit doctor
 platform: win32
 PATH entries: 42
+process.execPath: C:\Program Files\nodejs\node.exe
 PI_BIN: <unset>
+resolver candidates:
+  - [npm-global] C:\Users\alice\AppData\Roaming\npm\pi.cmd: found
+  - ...
 selected SpawnPlan:
+  SpawnPlan
   command: C:\Users\alice\AppData\Roaming\npm\pi.cmd
   argsPrefix: []
   confidence: high
-  envPatch: PI_BIN, Path
+  envPatch:
+    PI_BIN: C:\Users\alice\AppData\Roaming\npm\pi.cmd
+    PATH: <resolved executable directory prepended to PATH>
+  warnings:
+    - none
+session env patch:
+  status: applied
+  reason: high resolver result passed spawn smoke.
+  command: C:\Users\alice\AppData\Roaming\npm\pi.cmd
+  pathKey: Path
+  pathEntry: C:\Users\alice\AppData\Roaming\npm
+  smokeStatus: ok
 spawn smoke:
   status: ok
+  command: C:\Users\alice\AppData\Roaming\npm\pi.cmd
   args: ["--version"]
-  version: 0.83.0
+  timeoutMs: 3000
+  timedOut: false
+  exitCode: 0
+  signal: <none>
+  version: 1.3.0
+  stdout snippet: 1.3.0\n
+  stderr snippet: <empty>
+  error: <none>
 warnings:
   - none
 ```
