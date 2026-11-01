@@ -342,3 +342,33 @@ test("selection probe skips PATH stat churn after high-confidence npm-global mat
   assert.ok(selectionProbeCount < 10, `expected selection probe to stop early, got ${selectionProbeCount}`);
   assert.ok(selectionProbeCount < fullProbeCount / 10);
 });
+
+test("selection probe checks PATH candidates concurrently and preserves PATH priority", async () => {
+  const pathEntries = Array.from({ length: 24 }, (_, index) => `/selection/path/${index}`);
+  const firstMatch = "/selection/path/5/pi";
+  const laterMatch = "/selection/path/20/pi";
+  let activeProbes = 0;
+  let maxConcurrentProbes = 0;
+
+  const result = await resolver.resolvePiExecutable({
+    platform: "linux",
+    env: { PATH: pathEntries.join(":") },
+    processArgv: [],
+    processExecPath: "",
+    npmGlobalBin: [],
+    candidateProbe: "selection",
+    fileExists: async (candidatePath) => {
+      activeProbes += 1;
+      maxConcurrentProbes = Math.max(maxConcurrentProbes, activeProbes);
+      const delay = candidatePath === firstMatch ? 30 : candidatePath === laterMatch ? 1 : 5;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      activeProbes -= 1;
+      return candidatePath === firstMatch || candidatePath === laterMatch;
+    },
+  });
+
+  assert.equal(result.spawnPlan.command, firstMatch);
+  assert.equal(result.spawnPlan.confidence, "medium");
+  assert.deepEqual(result.candidates.map((candidate) => candidate.path), pathEntries.map((entry) => `${entry}/pi`));
+  assert.ok(maxConcurrentProbes > 1, `expected overlapping PATH probes, got ${maxConcurrentProbes}`);
+});

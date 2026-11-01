@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.11] - 2026-11-02
+
+### Performance
+
+- Probe PATH candidates concurrently in selection mode while preserving PATH priority.
+
 ## [0.2.10] - 2026-10-20
 
 ### Changed
