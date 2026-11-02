@@ -377,8 +377,9 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
     source: PiResolverCandidateSource,
     label: string,
     candidatePaths: string[],
+    parallel = candidateProbe === "full",
   ): Promise<Array<PiResolverCandidate | undefined>> => {
-    if (candidateProbe === "full") {
+    if (parallel) {
       return Promise.all(candidatePaths.map((candidatePath) => addCandidate(source, label, candidatePath)));
     }
 
@@ -455,7 +456,9 @@ export async function resolvePiExecutable(options: ResolvePiOptions = {}): Promi
   const pathCandidates = splitPathEntries(getPathValue(env, platform), platform).flatMap((pathEntry) => (
     executableNames.map((executableName) => joinForPathEntry(pathEntry, executableName, platform))
   ));
-  const pathProbes = await probeBatch("path", "PATH lookup", pathCandidates);
+  // Selection mode cannot stop early at PATH confidence, so probe the entire
+  // PATH batch concurrently while preserving candidate order in the results.
+  const pathProbes = await probeBatch("path", "PATH lookup", pathCandidates, true);
   recordCandidates(pathProbes);
   for (const candidate of pathProbes) {
     if (!selectedCandidate && candidate?.found) {
