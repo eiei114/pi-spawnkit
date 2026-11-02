@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { behaviorAssertions, parseJsonLines, VERIFICATION_CONTRACT } from "../scripts/pi-sdk-smoke-contract.mjs";
 
 const piCli = "C:/local/pi.js";
-const expectedVersion = "1.2.0";
+const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+const expectedVersion = manifest.devDependencies["@earendil-works/pi-coding-agent"];
 const makeDiagnostics = (overrides = {}) => ({
   platform: "win32",
   sessionEnvPatch: { status: "disabled" },
@@ -74,8 +76,8 @@ test("load and cleanup fail on missing registration, process failure, or unhandl
   assert.equal(behaviorAssertions("extension_load", observation())[0].passed, true);
   assert.equal(behaviorAssertions("extension_load", observation(null, { commandNames: [] }))[0].passed, false);
   assert.equal(behaviorAssertions("happy_path", observation(makeDiagnostics(), { fullOutput: "shutdown error" }))[0].passed, false);
-  assert.equal(behaviorAssertions("host_shell", { fullOutput: "1.2.0\n", exit_code: 0, processExited: true, expectedVersion })[0].passed, true);
-  for (const output of ["", "11.2.0", "1.2.0 failed", "1.1.0"]) {
+  assert.equal(behaviorAssertions("host_shell", { fullOutput: `${expectedVersion}\n`, exit_code: 0, processExited: true, expectedVersion })[0].passed, true);
+  for (const output of ["", `${expectedVersion}.unexpected`, `${expectedVersion} failed`]) {
     assert.equal(behaviorAssertions("host_shell", { fullOutput: output, exit_code: 0, processExited: true, expectedVersion })[0].passed, false);
   }
 });

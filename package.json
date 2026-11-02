@@ -1,6 +1,6 @@
 {
   "name": "pi-spawnkit",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "Child Pi executable resolver and diagnostics for reliable Pi sub-process launches.",
   "type": "module",
   "license": "MIT",
@@ -62,7 +62,7 @@
     "@earendil-works/pi-agent-core": "1.2.0",
     "@earendil-works/pi-ai": "1.2.0",
     "@earendil-works/pi-coding-agent": "1.2.0",
-    "@earendil-works/pi-tui": "1.2.0",
+    "@earendil-works/pi-tui": "1.3.0",
     "@types/node": "^26.1.1",
     "semver": "^7.8.5",
     "typebox": "latest",
