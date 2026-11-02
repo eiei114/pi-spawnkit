@@ -1,15 +1,15 @@
 # Publish Handoff
 
 Package: `pi-spawnkit`
-Version: `0.2.12`
+Version: `0.2.13`
 Status: `prepared`
 
-Version 0.2.12 aligns Pi SDK smoke expectations with the manifest's exact development pins and is prepared for review; this change does not authorize npm publication.
+Version 0.2.13 pins the README GitHub install example to the selected branch for unreleased testing and is prepared for review; this change does not authorize npm publication.
 
 ## What was built
 
-- `package.json` and `package-lock.json` are set to `0.2.12`.
-- `CHANGELOG.md` has a `0.2.12` entry covering manifest-aligned Pi SDK smoke expectations.
+- `package.json` and `package-lock.json` are set to `0.2.13`.
+- `CHANGELOG.md` has a `0.2.13` entry covering the README GitHub branch-install example.
 - `0.2.0` added the shared `spawnWithSpawnPlan` launcher in `lib/launch.ts` for cross-platform child Pi launches.
 - `npm run version:check` validates release metadata, changelog entry, lockfile version alignment, strict SemVer syntax, auto-release wiring, and npm Trusted Publishing policy by parsing workflow YAML.
 - Release workflow policy was checked:
@@ -25,7 +25,7 @@ Version 0.2.12 aligns Pi SDK smoke expectations with the manifest's exact develo
 - `npm run version:check` passed.
 - `npm run ci` passed:
   - `npm run typecheck` passed.
-  - `npm test` passed: 58 tests, including the PATH probe priority regression and manual-dispatch release contract tests.
+  - `npm test` passed: 59 tests, including the GitHub branch install example regression and manual-dispatch release contract tests.
   - `npm run smoke:pi` passed.
   - `npm run version:check` passed.
   - `npm run pack:check` / `npm pack --dry-run` passed.
@@ -55,10 +55,10 @@ Dry-run tarball summary:
 
 ```text
 name: pi-spawnkit
-version: 0.2.12
-filename: pi-spawnkit-0.2.12.tgz
-package size: 18.5 kB
-unpacked size: 68.7 kB
+version: 0.2.13
+filename: pi-spawnkit-0.2.13.tgz
+package size: 18.6 kB
+unpacked size: 68.9 kB
 total files: 16
 ```
 
@@ -70,8 +70,8 @@ total files: 16
    - repository: `eiei114/pi-spawnkit`
    - workflow filename: `publish.yml`
    - environment: none, unless intentionally changed later.
-3. Only after separately authorizing the release, manually dispatch the `Auto Release` workflow against `main`. It checks the previous commit, creates `v0.2.12` and its GitHub Release, then dispatches `publish.yml` for that tag.
-4. Verify the GitHub release is `v0.2.12` and npm shows `pi-spawnkit@0.2.12` after the trusted publish workflow completes.
+3. Only after separately authorizing the release, manually dispatch the `Auto Release` workflow against `main`. It checks the previous commit, creates `v0.2.13` and its GitHub Release, then dispatches `publish.yml` for that tag.
+4. Verify the GitHub release is `v0.2.13` and npm shows `pi-spawnkit@0.2.13` after the trusted publish workflow completes.
 
 Do not run local `npm publish`; publish credentials, OTP, release promotion, and final package publication remain human-owned.
 
@@ -79,4 +79,4 @@ Do not run local `npm publish`; publish credentials, OTP, release promotion, and
 
 - Merging a `package.json` version bump does not run auto-release. Manually dispatching `Auto Release` can create a GitHub release and trigger npm publication; treat that dispatch as a separately authorized human release action.
 - npm Trusted Publishing must be configured on npmjs.com before the publish workflow can complete.
-- If `v0.2.12` already exists when auto-release is manually dispatched, it skips tag/release creation by design.
+- If `v0.2.13` already exists when auto-release is manually dispatched, it skips tag/release creation by design.

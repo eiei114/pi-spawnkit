@@ -47,10 +47,10 @@ Install from npm for normal consumer use:
 pi install npm:pi-spawnkit
 ```
 
-Install from GitHub when testing an unreleased branch:
+Install from a GitHub branch when testing an unreleased change. Replace `feature-branch` with the branch name you want to test:
 
 ```bash
-pi install git:github.com/eiei114/pi-spawnkit
+pi install git:github.com/eiei114/pi-spawnkit@feature-branch
 ```
 
 For local development, load the checkout for the current run without changing global settings:

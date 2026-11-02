@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.13] - 2026-11-03
+
+### Changed
+
+- Pin the README GitHub install example to the selected branch for unreleased testing.
+
 ## [0.2.12] - 2026-11-02
 
 ### Fixed

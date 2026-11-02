@@ -34,6 +34,14 @@ test("pi manifest exposes only the spawnkit extension", () => {
   assert.equal(pkg.pi.themes, undefined);
 });
 
+test("README GitHub install example pins the branch being tested", async () => {
+  const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+
+  assert.match(readme, /Install from a GitHub branch when testing an unreleased change/);
+  assert.match(readme, /Replace `feature-branch` with the branch name you want to test/);
+  assert.match(readme, /pi install git:github\.com\/eiei114\/pi-spawnkit@feature-branch/);
+});
+
 test("contributor docs keep the pi-spawnkit package identity", async () => {
   const contributing = await readFile(new URL("../CONTRIBUTING.md", import.meta.url), "utf8");
 
