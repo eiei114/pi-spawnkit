@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [0.2.12] - 2026-11-02
+
+### Fixed
+
+- Keep Pi SDK test and smoke expectations aligned with the manifest's exact development pins.
+
 ## [0.2.11] - 2026-11-02
 
 ### Performance
