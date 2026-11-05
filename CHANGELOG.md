@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project follows semantic versioning.
 
+## [Unreleased]
+
+### Changed
+
+- Bump the `@earendil-works/*` development pins to 1.5.0 and refresh Pi SDK smoke evidence.
+
 ## [0.2.13] - 2026-11-03
 
 ### Changed
