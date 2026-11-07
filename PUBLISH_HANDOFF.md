@@ -70,7 +70,7 @@ total files: 16
    - repository: `eiei114/pi-spawnkit`
    - workflow filename: `publish.yml`
    - environment: none, unless intentionally changed later.
-3. Only after separately authorizing the release, manually dispatch the `Auto Release` workflow against `main`. It checks the previous commit, creates `v0.2.14` and its GitHub Release, then dispatches `publish.yml` for that tag.
+3. Only after separately authorizing the release, manually dispatch the `Auto Release` workflow against `main`. It compares `package.json` at `HEAD` with `HEAD^`, creates `v0.2.14` and its GitHub Release, then dispatches `publish.yml` for that tag. Dispatch it while the `0.2.14` version-bump commit is still the tip of `main`; if `main` has advanced without another version change, the workflow logs `package.json version did not change` and skips.
 4. Verify the GitHub release is `v0.2.14` and npm shows `pi-spawnkit@0.2.14` after the trusted publish workflow completes.
 
 Do not run local `npm publish`; publish credentials, OTP, release promotion, and final package publication remain human-owned.
@@ -80,3 +80,4 @@ Do not run local `npm publish`; publish credentials, OTP, release promotion, and
 - Merging a `package.json` version bump does not run auto-release. Manually dispatching `Auto Release` can create a GitHub release and trigger npm publication; treat that dispatch as a separately authorized human release action.
 - npm Trusted Publishing must be configured on npmjs.com before the publish workflow can complete.
 - If `v0.2.14` already exists when auto-release is manually dispatched, it skips tag/release creation by design.
+- If `Auto Release` skipped because `main` advanced past the version-bump commit, the release owner, under the same separate release authorization, can create the `v0.2.14` tag and GitHub Release on the version-bump commit. Pushing that tag triggers `publish.yml`; if no publish run starts, manually dispatch `publish.yml` with `ref=v0.2.14`. `publish.yml` skips the publish step when `pi-spawnkit@0.2.14` is already on npm.
